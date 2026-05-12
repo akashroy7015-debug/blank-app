@@ -47,7 +47,10 @@ Build a dating app on Emergent. Minimal, engaging, aesthetic interface. Optional
 - ✅ Cookie consent banner
 - ✅ Reporting + blocking modal in chat
 - ✅ 12 seeded demo profiles + admin + demo user
-- ✅ Backend tests: 39/40 pass (97.5%). Stripe status hardened to be webhook-aware (returns open instead of 502 if sandbox can't retrieve session).
+
+### Iteration 2 (Feb 2026)
+- ✅ **Photo upload** via Emergent object storage: `/api/upload/photo` (POST multipart, 8MB max), `/api/files/{path}` (GET with auth), DELETE soft-delete. Onboarding & Profile use a drag-and-drop PhotoUploader component. 100% test pass.
+- ✅ **Multi-currency pricing**: backend `/api/plans?currency=usd|inr` returns the right price table. India sees ₹199/₹399/₹549 plans + ₹100 swipe pack; rest of world sees $7.99/$14.99/$24.99 + $0.99. Browser locale + timezone auto-detect (Asia/Kolkata or *-IN locales → INR), user can override with currency toggle on Plans page. `/api/checkout/session` honors the chosen currency; Billing + Payment Success render correct symbol. 21/21 new tests pass.
 
 ## Backlog (P1)
 - Real Instagram/Facebook OAuth (requires Meta dev keys)

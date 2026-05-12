@@ -820,15 +820,16 @@ async def upload_photo(file: UploadFile = File(...), user: Dict = Depends(get_cu
     return {"file_id": record["file_id"], "path": record["storage_path"], "url": f"/api/files/{record['storage_path']}", "size": record["size"]}
 
 @api.get("/files/{path:path}")
-async def get_file(path: str, auth: Optional[str] = Query(None)):
+async def get_file(path: str, authorization: Optional[str] = Header(None), auth: Optional[str] = Query(None)):
     # img tags can't send Authorization headers, so accept ?auth=<jwt> as fallback.
-    # Any signed-in user can view any photo (profiles are public-by-design in a dating app).
+    # Any authenticated user may view photos (profiles are visible to logged-in users).
     user_id = None
-    if auth:
+    if authorization and authorization.lower().startswith("bearer "):
+        user_id = decode_token(authorization.split(" ", 1)[1].strip())
+    if not user_id and auth:
         user_id = decode_token(auth)
     if not user_id:
-        # also accept Bearer
-        pass
+        raise HTTPException(401, "Authentication required")
     rec = await db.files.find_one({"storage_path": path, "is_deleted": False}, {"_id": 0})
     if not rec:
         raise HTTPException(404, "File not found")
@@ -837,7 +838,7 @@ async def get_file(path: str, auth: Optional[str] = Query(None)):
     except Exception as e:
         log.error(f"file fetch err: {e}")
         raise HTTPException(503, "Storage unavailable")
-    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "public, max-age=86400"})
+    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "private, max-age=3600"})
 
 @api.delete("/upload/photo")
 async def delete_photo(path: str, user: Dict = Depends(get_current_user)):
