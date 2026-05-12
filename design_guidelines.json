@@ -1,0 +1,126 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 5: Jewel & Luxury (Editorial Dark Variant)",
+  "brand": {
+    "name": "Sparkd",
+    "vibe": "Premium, minimal, fashion editorial, high-trust, tactile"
+  },
+  "colors": {
+    "background": "#0F0E0D",
+    "surface": "#181615",
+    "primary": "#C45A45",
+    "primary_foreground": "#FFF5F0",
+    "secondary": "#2A2624",
+    "secondary_foreground": "#D1C5B8",
+    "accent": "#D1C5B8",
+    "accent_foreground": "#0F0E0D",
+    "text_main": "#F2EBE1",
+    "text_muted": "#8C847A",
+    "border": "#332D29",
+    "success": "#5C7A4D",
+    "error": "#9E3636",
+    "safety_badge": "#D4AF37",
+    "glass_overlay": "rgba(24, 22, 21, 0.6)"
+  },
+  "typography": {
+    "fonts_to_import": [
+      "Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600",
+      "Manrope:wght@300;400;500;600"
+    ],
+    "headings": {
+      "font_family": "Fraunces, serif",
+      "style": "serif, editorial, highly legible, elegant",
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none font-light",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-light",
+      "h3": "text-xl sm:text-2xl tracking-tight font-normal"
+    },
+    "body": {
+      "font_family": "Manrope, sans-serif",
+      "style": "clean, highly readable, geometric humanist",
+      "base": "text-base leading-relaxed tracking-wide font-light",
+      "small": "text-sm uppercase tracking-[0.15em] font-medium"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing, Editorial Grids, Asymmetry. Focus on negative space to establish premium feel.",
+    "container_padding": "p-8 md:p-12 lg:p-16",
+    "grid_system_marketing": "Bento 'Tetris' Grid, wide gaps (gap-8 to gap-12), mixing spans for asymmetry.",
+    "grid_system_app": "Mobile-first strict hierarchy, edge-to-edge images.",
+    "swipe_deck_layout": "Relative container, absolute stacked cards. Cards must be max-h-[80vh] with fluid width. Text overlay pinned to bottom."
+  },
+  "surfaces_and_micro_themes": {
+    "cards": "Flat background #181615, 1px subtle border #332D29, no shadow. Active/Hover states lift with soft ambient shadow.",
+    "modals_and_age_gate": "Crystal Glassmorphism: backdrop-blur-2xl bg-[#181615]/70 border border-white/10. Must feel like milled crystal.",
+    "buttons": "Pill-shaped (rounded-full). Primary uses brand terracotta #C45A45. Secondary uses transparent bg with border. Small-caps tracking-wide for text.",
+    "legal_pages": "Magazine layout: Asymmetric 2-column grid on desktop. Massive H1s, deep margins, elegant pull quotes in Fraunces italic, no boring walls of text.",
+    "pricing_table": "Tracing Beam aesthetic for Premium/Platinum tiers. Active glowing border."
+  },
+  "components": {
+    "navigation": "Sticky or fixed top, Glassmorphism. Brand name centered in Fraunces, minimal Phosphor icons.",
+    "swipe_card": "Edge-to-edge image. Heavy bottom gradient overlay: bg-gradient-to-t from-black/90 via-black/40 to-transparent. Ensure text meets APCA contrast.",
+    "safety_center": "Editorial cards, high contrast, clean iconography. Use blurred photo representations for women's safety features demo.",
+    "trust_badges": "Minimalist outline icons, colored in safety_badge gold or success green, paired with 'Verified' uppercase tracking-widest text."
+  },
+  "motion": {
+    "swipe_gestures": "Framer Motion drag constraints. Spring physics (stiffness: 300, damping: 20). Dynamic tilt rotation linked to drag X offset (x input maps to rotateZ).",
+    "page_transitions": "Subtle fade and y-axis drift (slide up 10px).",
+    "micro_interactions": "Hover scale 1.02 on interactive cards, tap scale 0.98 on buttons. High refresh-rate fluidity."
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "style": "Duotone or Thin weight. Sophisticated, un-cluttered.",
+    "installation": "yarn add @phosphor-icons/react"
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1713528757608-cac0e6c26155?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxiZWF1dGlmdWwlMjBkaXZlcnNlJTIweW91bmclMjBwZW9wbGUlMjBwb3J0cmFpdCUyMGZhc2hpb258ZW58MHx8fHwxNzc4NTg4OTc3fDA&ixlib=rb-4.1.0&q=85",
+        "category": "marketing_hero",
+        "description": "Fashion editorial portrait of diverse young women, useful for premium marketing hero or app showcase."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1594250945179-6ace32113329?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxiZWF1dGlmdWwlMjBkaXZlcnNlJTIweW91bmclMjBwZW9wbGUlMjBwb3J0cmFpdCUyMGZhc2hpb258ZW58MHx8fHwxNzc4NTg4OTc3fDA&ixlib=rb-4.1.0&q=85",
+        "category": "swipe_deck_placeholder",
+        "description": "High quality portrait for dating app match cards placeholder."
+      },
+      {
+        "url": "https://images.pexels.com/photos/9256858/pexels-photo-9256858.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "community_safety",
+        "description": "Diverse group portrait, excellent for Community Guidelines or Safety Center headers."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1614064745490-83abb17303e1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxzZWN1cmUlMjBzYWZldHklMjBwcml2YWN5JTIwYWJzdHJhY3QlMjBtaW5pbWFsfGVufDB8fHx8MTc3ODU4ODk3N3ww&ixlib=rb-4.1.0&q=85",
+        "category": "legal_privacy",
+        "description": "Abstract minimalist padlock, suitable for Trust & Safety, Privacy Policy, or Age Gate backgrounds."
+      }
+    ],
+    "social_logos": [
+      {
+        "name": "Instagram",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
+      },
+      {
+        "name": "Facebook",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
+      },
+      {
+        "name": "Google",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+      }
+    ]
+  },
+  "testing": {
+    "data_testid_requirement": "All interactive elements (buttons, links, form inputs, swipe cards, modals) MUST include descriptive, kebab-case data-testid attributes."
+  },
+  "instructions_to_main_agent": [
+    "READ THE COLORS: Implement the dark theme explicitly. Do NOT use default Tailwind colors like slate/blue. Use the provided earthy/obsidian HEX codes.",
+    "FONTS ARE CRITICAL: Import Fraunces and Manrope. Never use Inter, Space Grotesk, Roboto, or standard Sans for headings. Map Fraunces to your H1, H2, H3.",
+    "BUILDING SWIPE DECK: Use Framer Motion for draggable cards with physics. Map the drag X value to rotation to create a natural, tactile card flip effect. Cards must not be fully rectangular, use slight rounded-2xl corners.",
+    "LEGAL/COMPLIANCE PAGES: Do not treat these as boring plain text. Format them like an online fashion editorial. Use 2-column asynchronous layouts, massive section numbers, pull quotes, and generous padding.",
+    "SAFETY CENTER: Prioritize trust visuals. Implement the 'women safety tools' (blur photos, verified mode) as toggleable premium UI cards with smooth animations.",
+    "AGE GATE 18+: Display as a crystal glassmorphism modal with strict validation.",
+    "COMPLIANCE DASHBOARD: Use a dense, grid-based layout for the admin area, but keep the typography sharp and monochrome.",
+    "Ensure '10 free swipes daily' uses a circular progress or elegant timer countdown component.",
+    "USE PLACEHOLDERS PROPERLY: Only use the exact image_urls provided in this JSON. Do NOT invent 'via.placeholder.com' URLs."
+  ]
+}
