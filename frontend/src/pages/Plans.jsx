@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import api from "@/api";
 import AppShell from "@/components/AppShell";
 import { toast } from "sonner";
-import { Crown, Lightning, CaretDown } from "@phosphor-icons/react";
+import { Crown, Lightning } from "@phosphor-icons/react";
 import { detectCurrency, setCurrency as persistCurrency, CURRENCIES, formatMoney } from "@/currency";
+import { payWithRazorpay } from "@/razorpay";
+import { useAuth } from "@/auth";
 
 export default function Plans() {
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState("");
   const [currency, setCurrency] = useState(detectCurrency());
   const nav = useNavigate();
+  const { refresh } = useAuth();
 
   const load = (cur) => api.get(`/plans?currency=${cur}`).then(r => setData(r.data));
   useEffect(() => { load(currency); }, [currency]);
@@ -23,9 +26,24 @@ export default function Plans() {
   const checkout = async (pid) => {
     setBusy(pid);
     try {
-      const { data } = await api.post("/checkout/session", { package_id: pid, origin_url: window.location.origin, currency });
-      window.location.href = data.url;
-    } catch (e) { toast.error(e?.response?.data?.detail || "Checkout error"); setBusy(""); }
+      if (currency === "inr") {
+        // Auto-route Indian users to Razorpay
+        const result = await payWithRazorpay(pid);
+        await refresh();
+        toast.success(result.mock ? "Demo payment confirmed — subscription activated." : "Payment successful!");
+        nav("/app/billing");
+      } else {
+        // Stripe for USD / global
+        const { data } = await api.post("/checkout/session", { package_id: pid, origin_url: window.location.origin, currency });
+        window.location.href = data.url;
+      }
+    } catch (e) {
+      if (e?.message !== "cancelled" && e?.message !== "dismissed") {
+        toast.error(e?.response?.data?.detail || e?.message || "Checkout error");
+      }
+    } finally {
+      setBusy("");
+    }
   };
 
   if (!data) return <AppShell><div className="p-10 text-[var(--muted)]">Loading…</div></AppShell>;
@@ -122,8 +140,14 @@ export default function Plans() {
 
         <p className="text-xs text-[var(--muted)] mt-10 max-w-2xl">
           Subscriptions auto-renew until canceled. Cancel anytime in <a href="/app/billing" className="underline">Billing</a>.
-          See our <a href="/legal/refund" className="underline">Refund Policy</a> for details. Payments are processed securely via Stripe (PCI-compliant).
-          Pricing for India is shown in ₹ (INR). Other regions default to USD; you can override with the currency toggle above.
+          See our <a href="/legal/refund" className="underline">Refund Policy</a> for details.
+          {currency === "inr"
+            ? <> Indian users pay securely via <span className="text-[var(--accent)]">Razorpay</span> (UPI, cards, wallets, net banking).</>
+            : <> Payments are processed securely via <span className="text-[var(--accent)]">Stripe</span> (PCI-compliant).</>}
+          {" "}You can override your currency with the toggle above.
+          {data && data.razorpay_live === false && currency === "inr" && (
+            <span className="block mt-2 text-[var(--gold)]">Razorpay is in <strong>demo mode</strong> on this preview — payments are simulated. Add real keys in backend/.env to go live.</span>
+          )}
         </p>
       </div>
     </AppShell>

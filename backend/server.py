@@ -35,6 +35,18 @@ JWT_ALG = os.environ.get("JWT_ALGORITHM", "HS256")
 JWT_DAYS = int(os.environ.get("JWT_EXPIRE_DAYS", "7"))
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "")
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
+
+def razorpay_live() -> bool:
+    """True only when real Razorpay credentials are present (not placeholders)."""
+    return bool(
+        RAZORPAY_KEY_ID
+        and RAZORPAY_KEY_SECRET
+        and not RAZORPAY_KEY_ID.endswith("PLACEHOLDER")
+        and not RAZORPAY_KEY_SECRET.startswith("PLACEHOLDER")
+    )
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
@@ -988,7 +1000,156 @@ async def get_plans(currency: str = Query("usd")):
         "currency_meta": meta,
         "comparison": COMPARISON[currency],
         "supported_currencies": [{"code": c, **CURRENCY_META[c]} for c in PRICES.keys()],
+        "payment_providers": {
+            "usd": "stripe",
+            "inr": "razorpay",
+        },
+        "razorpay_live": razorpay_live(),
+        "razorpay_key_id": RAZORPAY_KEY_ID if razorpay_live() else "",
     }
+
+# ---- RAZORPAY (India) ----
+class RazorpayOrderReq(BaseModel):
+    package_id: str
+
+class RazorpayVerifyReq(BaseModel):
+    order_id: str
+    payment_id: str = ""
+    signature: str = ""
+    mock: bool = False  # set by frontend when running in demo mode
+
+@api.post("/razorpay/order")
+async def razorpay_create_order(req: RazorpayOrderReq, user: Dict = Depends(get_current_user)):
+    if req.package_id not in PACKAGES:
+        raise HTTPException(400, "Invalid package")
+    pkg = PACKAGES[req.package_id]
+    amount_inr = float(get_price(req.package_id, "inr"))
+    amount_paise = int(round(amount_inr * 100))
+
+    receipt = f"sparkd_{user['user_id'][-8:]}_{int(now_utc().timestamp())}"[:40]
+    notes = {"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"]}
+
+    if razorpay_live():
+        try:
+            import razorpay
+            rzp = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+            order = rzp.order.create({
+                "amount": amount_paise,
+                "currency": "INR",
+                "receipt": receipt,
+                "payment_capture": 1,
+                "notes": notes,
+            })
+            order_id = order["id"]
+            mock = False
+        except Exception as e:
+            log.error(f"razorpay create error: {e}")
+            raise HTTPException(502, "Razorpay error")
+    else:
+        # Demo/test mode — frontend will show a simulated checkout modal
+        order_id = f"order_mock_{uuid.uuid4().hex[:14]}"
+        mock = True
+
+    await db.payment_transactions.insert_one({
+        "tx_id": gen_id("tx"),
+        "provider": "razorpay",
+        "session_id": order_id,  # reuse field name for billing history compatibility
+        "order_id": order_id,
+        "user_id": user["user_id"],
+        "email": user.get("email"),
+        "amount": amount_inr, "currency": "inr",
+        "package_id": req.package_id,
+        "kind": pkg["kind"],
+        "payment_status": "initiated",
+        "status": "open",
+        "mock": mock,
+        "metadata": notes,
+        "created_at": iso(now_utc()),
+    })
+    return {
+        "order_id": order_id,
+        "amount": amount_paise,
+        "currency": "INR",
+        "key_id": RAZORPAY_KEY_ID if razorpay_live() else "",
+        "name": "Sparkd",
+        "description": pkg["name"],
+        "prefill": {"name": user.get("name", ""), "email": user.get("email", "")},
+        "notes": notes,
+        "mock": mock,
+    }
+
+async def _finalize_razorpay_paid(tx: Dict[str, Any]):
+    """Idempotent: apply package perks to the user once payment is confirmed."""
+    if tx.get("payment_status") == "paid":
+        return
+    await db.payment_transactions.update_one(
+        {"order_id": tx["order_id"]},
+        {"$set": {"payment_status": "paid", "status": "complete", "completed_at": iso(now_utc())}},
+    )
+    pkg_id = tx["package_id"]
+    pkg = PACKAGES.get(pkg_id, {})
+    if pkg.get("kind") == "subscription":
+        await db.users.update_one({"user_id": tx["user_id"]}, {"$set": {
+            "subscription": {"plan": pkg_id, "active": True, "renews_at": iso(now_utc() + timedelta(days=30)), "provider": "razorpay"},
+        }})
+    elif pkg.get("kind") == "one_time" and pkg_id == "swipe_pack":
+        await db.users.update_one({"user_id": tx["user_id"]}, {"$inc": {"bonus_swipes": 10, "daily_swipes.bonus": 10}})
+
+@api.post("/razorpay/verify")
+async def razorpay_verify(req: RazorpayVerifyReq, user: Dict = Depends(get_current_user)):
+    tx = await db.payment_transactions.find_one({"order_id": req.order_id, "user_id": user["user_id"]}, {"_id": 0})
+    if not tx:
+        raise HTTPException(404, "Order not found")
+
+    # Demo / mock mode — simulated success
+    if tx.get("mock") or req.mock or not razorpay_live():
+        await _finalize_razorpay_paid(tx)
+        return {"ok": True, "mock": True, "payment_status": "paid"}
+
+    # Real verification — Razorpay signature check
+    try:
+        import razorpay
+        rzp = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+        rzp.utility.verify_payment_signature({
+            "razorpay_order_id": req.order_id,
+            "razorpay_payment_id": req.payment_id,
+            "razorpay_signature": req.signature,
+        })
+    except Exception as e:
+        log.warning(f"razorpay signature verify failed: {e}")
+        await db.payment_transactions.update_one({"order_id": req.order_id}, {"$set": {"payment_status": "failed", "status": "failed", "reason": "signature_invalid"}})
+        raise HTTPException(400, "Invalid payment signature")
+
+    await db.payment_transactions.update_one({"order_id": req.order_id}, {"$set": {"payment_id": req.payment_id}})
+    await _finalize_razorpay_paid(tx)
+    return {"ok": True, "mock": False, "payment_status": "paid"}
+
+@api.post("/webhook/razorpay")
+async def razorpay_webhook(request: Request):
+    body = await request.body()
+    sig = request.headers.get("X-Razorpay-Signature", "")
+    if razorpay_live() and RAZORPAY_WEBHOOK_SECRET and not RAZORPAY_WEBHOOK_SECRET.startswith("PLACEHOLDER"):
+        try:
+            import razorpay
+            rzp = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+            rzp.utility.verify_webhook_signature(body.decode(), sig, RAZORPAY_WEBHOOK_SECRET)
+        except Exception as e:
+            log.warning(f"razorpay webhook sig invalid: {e}")
+            return JSONResponse({"ok": False}, status_code=400)
+    try:
+        import json as _json
+        payload = _json.loads(body.decode())
+    except Exception:
+        return JSONResponse({"ok": False}, status_code=400)
+    event = payload.get("event", "")
+    if event in ("payment.captured", "order.paid"):
+        entity = payload.get("payload", {}).get("payment", {}).get("entity") or payload.get("payload", {}).get("order", {}).get("entity") or {}
+        order_id = entity.get("order_id") or entity.get("id")
+        if order_id:
+            tx = await db.payment_transactions.find_one({"order_id": order_id}, {"_id": 0})
+            if tx:
+                await _finalize_razorpay_paid(tx)
+    return {"ok": True}
 
 # ---- ADMIN ----
 @api.get("/admin/stats")

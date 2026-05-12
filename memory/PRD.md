@@ -48,9 +48,13 @@ Build a dating app on Emergent. Minimal, engaging, aesthetic interface. Optional
 - ✅ Reporting + blocking modal in chat
 - ✅ 12 seeded demo profiles + admin + demo user
 
-### Iteration 2 (Feb 2026)
-- ✅ **Photo upload** via Emergent object storage: `/api/upload/photo` (POST multipart, 8MB max), `/api/files/{path}` (GET with auth), DELETE soft-delete. Onboarding & Profile use a drag-and-drop PhotoUploader component. 100% test pass.
-- ✅ **Multi-currency pricing**: backend `/api/plans?currency=usd|inr` returns the right price table. India sees ₹199/₹399/₹549 plans + ₹100 swipe pack; rest of world sees $7.99/$14.99/$24.99 + $0.99. Browser locale + timezone auto-detect (Asia/Kolkata or *-IN locales → INR), user can override with currency toggle on Plans page. `/api/checkout/session` honors the chosen currency; Billing + Payment Success render correct symbol. 21/21 new tests pass.
+### Iteration 3 (Feb 2026)
+- ✅ **Razorpay integration** for Indian users (UPI, cards, wallets, net banking)
+  - Backend: `POST /api/razorpay/order`, `POST /api/razorpay/verify` (signature check), `POST /api/webhook/razorpay`
+  - Frontend: Razorpay Checkout JS modal opens when currency=inr, Stripe Checkout when currency=usd — automatic routing
+  - **Demo mode** active: when `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` are placeholders, backend returns a mock order and the frontend simulates the payment so the full flow can be tested end-to-end. Plug real keys into `backend/.env` to go live — no code changes needed.
+  - Razorpay transactions land in the same `payment_transactions` collection with `provider: "razorpay"`, so Billing dashboard shows both providers seamlessly.
+  - Subscription perks (or +10 bonus swipes for the pack) are applied idempotently on `/api/razorpay/verify` success or webhook arrival.
 
 ## Backlog (P1)
 - Real Instagram/Facebook OAuth (requires Meta dev keys)
