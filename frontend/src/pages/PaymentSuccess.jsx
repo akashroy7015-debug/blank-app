@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import api from "@/api";
 import { useAuth } from "@/auth";
 import { CheckCircle, XCircle, CircleNotch } from "@phosphor-icons/react";
+import { formatMoney } from "@/currency";
 
 export default function PaymentSuccess() {
   const [params] = useSearchParams();
@@ -41,7 +42,7 @@ export default function PaymentSuccess() {
         {status === "paid" && <>
           <CheckCircle size={56} weight="fill" className="mx-auto text-[var(--success)]" />
           <h1 className="font-serif text-4xl mt-6">You're in.</h1>
-          <p className="text-[var(--muted)] mt-3">{details?.currency?.toUpperCase()} {(details?.amount_total || 0) / 100}</p>
+          <p className="text-[var(--muted)] mt-3">{formatMoney((details?.amount_total || 0) / 100, details?.currency)}</p>
           <div className="mt-8 flex gap-2">
             <Link to="/app/swipe" className="btn-primary flex-1" data-testid="success-back-swipe">Start swiping</Link>
             <Link to="/app/billing" className="btn-ghost flex-1" data-testid="success-billing">Billing</Link>

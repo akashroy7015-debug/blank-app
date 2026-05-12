@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 2 retest: 21/21 (100%) backend tests passed for the NEW endpoints. Multi-currency /api/plans (USD default, INR override, EUR fallback), comparison + supported_currencies envelope, /api/checkout/session with currency=inr (premium ₹399.0) and currency=usd (basic 7.99) — both persisted correctly in payment_transactions with proper currency/amount. Invalid package_id correctly rejected with 400. /api/upload/photo: auth-gated (401 without bearer), real PNG accepted (>200 bytes, <8MB), text/plain rejected (400), <200B rejected (400), >8MB rejected (413), file_id/path/url/size returned, files document persisted with is_deleted=False. /api/files/{path}?auth=<jwt> serves bytes with image/* content-type, nonexistent path returns 404. DELETE /api/upload/photo soft-deletes (is_deleted=true), pulls /api/files/<path> from user.photos array, and forbids non-owners (404). Regression spot-checks (login, swipes/deck, billing/history with currency) all green.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter2_storage_and_currency.py",
+    "/app/test_reports/pytest/iter2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py grew to 1163 lines — still violates the >700 line guideline. Split into auth.py, swipes.py, matches.py, safety.py, privacy.py, checkout.py, storage.py, admin.py, seed.py.",
+    "/api/files/{path:path} silently allows unauthenticated access — the docstring even says 'Any signed-in user can view any photo', but the code does NOT enforce signed-in: if `auth` query param is missing or invalid, user_id remains None and the file is still served (verified: GET without auth returned 200). Either enforce auth (return 401 when user_id is None) or remove the misleading comments; if photos are intentionally public, document that publicly accessible storage URLs are exposed and consider signed/expiring URLs.",
+    "storage_get is a sync `requests` call inside an async endpoint — blocks the event loop on every photo fetch. Use httpx.AsyncClient or run in a threadpool. Same for storage_put and init_storage.",
+    "/api/upload/photo does NOT validate that the uploaded bytes are actually an image (e.g., via PIL.Image.open or magic-byte sniff). A client can set Content-Type: image/png and upload arbitrary binary >200 bytes <8MB — this could be abused for arbitrary file storage / data exfiltration. Recommend a magic-byte check.",
+    "/api/upload/photo: file extension is derived from MIME (`MIME_EXT[ct]`) without sanitization of the original filename, which is fine, but the storage path uses uuid.uuid4().hex which is good. However, the returned `path` is trusted on DELETE without verifying it follows the {APP_NAME}/photos/{user_id}/... pattern — the ownership check via DB lookup mitigates this, but adding a path prefix assertion would be defense-in-depth.",
+    "DELETE /api/upload/photo soft-deletes the files doc but does NOT remove the object from underlying Emergent objstore — storage costs accumulate indefinitely. Consider a background cleanup job or hard-delete on the storage layer.",
+    "/api/files/{path} sets `Cache-Control: public, max-age=86400` even for files that may be soft-deleted later — once cached by CDN/browser, deleted photos remain visible for up to 24h. Consider `private` or a shorter max-age for photos that can be deleted.",
+    "_normalize_currency silently falls back to 'usd' on unsupported input. This is convenient but masks frontend bugs. Consider logging a warning when fallback triggers.",
+    "/api/checkout/session uses real Stripe sandbox per request; no rate limiting. A malicious user could spam session creation and pollute payment_transactions.",
+    "Inherited from iteration 1 (still unresolved as code smells): no rate limiting on /api/auth/login or /api/auth/otp/request; AI moderation substring match; /api/safety/report doesn't validate target_user_id exists."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter2_storage_and_currency.py"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21 on new feature suite)",
+    "frontend": "not tested (skipped per request)"
+  },
+  "test_credentials": "Admin: admin@sparkd.app / AdminSparkd2026! ; Demo: demo@sparkd.app / DemoSparkd2026! — both verified.",
+  "seed_data_creation": "Each test run creates a few payment_transactions rows (Stripe sandbox sessions) and a handful of files documents + Emergent objstore objects under sparkd/photos/<demo_user_id>/<uuid>.png. The 'test_delete_only_owner' and 'test_delete_pulls_from_user_photos' tests clean up their own uploads via DELETE. The 'test_upload_real_png_success' upload is intentionally left behind so subsequent GET-file tests can reuse it.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 2 fully green for new features. backend_test.py (iteration 1) covers the full original suite; test_iter2_storage_and_currency.py covers the new endpoints. Use REACT_APP_BACKEND_URL env var. For PNG uploads use _png_bytes(size) helper which builds a real, valid PNG of arbitrary size via a tEXt padding chunk. The Stripe 502 from iteration 1 has been mitigated — /api/checkout/status now returns 200 with status='open' on sandbox-retrieval failure (verified in code at server.py:907-910, frontend can keep polling and webhook will finalize).",
+  "rca_of_the_issue": "N/A — no bugs found in iteration 2 features."
+}

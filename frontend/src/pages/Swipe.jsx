@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import { toast } from "sonner";
 import { Heart, X, Star, Sparkle, SealCheck, Lightning, Clock } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
+import { photoSrc } from "@/photo";
 
 function Countdown({ resetIso }) {
   const [t, setT] = useState("");
@@ -41,7 +42,7 @@ function Card({ p, onSwipe, isTop }) {
       className="absolute inset-0 rounded-3xl overflow-hidden surface cursor-grab"
       data-testid={`swipe-card-${p.user_id}`}
     >
-      <img src={p.photos?.[0] || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=900&q=80"} alt={p.name} className="w-full h-full object-cover pointer-events-none" />
+      <img src={photoSrc(p.photos?.[0])} alt={p.name} className="w-full h-full object-cover pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
       {p.verified_badge && (
         <div className="absolute top-5 right-5 glass rounded-full p-2"><SealCheck size={20} weight="fill" className="text-[var(--gold)]" /></div>
@@ -163,7 +164,7 @@ export default function Swipe() {
               <Lightning size={56} className="mx-auto text-[var(--primary)] mb-4" weight="fill" />
               <h2 className="font-serif text-5xl">It's a Spark</h2>
               <p className="text-[var(--muted)] mt-2">You and {matchModal.name} liked each other.</p>
-              {matchModal.photo && <img src={matchModal.photo} alt="" className="mx-auto mt-6 w-32 h-32 rounded-full object-cover border-2 border-[var(--primary)]" />}
+              {matchModal.photo && <img src={photoSrc(matchModal.photo)} alt="" className="mx-auto mt-6 w-32 h-32 rounded-full object-cover border-2 border-[var(--primary)]" />}
               <div className="mt-8 flex gap-3">
                 <button onClick={() => setMatchModal(null)} className="btn-ghost flex-1" data-testid="match-continue-btn">Keep swiping</button>
                 <button onClick={() => nav(`/app/chat/${matchModal.match_id}`)} className="btn-primary flex-1" data-testid="match-message-btn">Send a message</button>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "@/api";
 import AppShell from "@/components/AppShell";
 import { SealCheck, ChatCircle } from "@phosphor-icons/react";
+import { photoSrc } from "@/photo";
 
 export default function Matches() {
   const [matches, setMatches] = useState([]);
@@ -30,7 +31,7 @@ export default function Matches() {
             <div className="grid sm:grid-cols-2 gap-4">
               {matches.map(m => (
                 <Link key={m.match_id} to={`/app/chat/${m.match_id}`} data-testid={`match-row-${m.match_id}`} className="surface p-4 flex items-center gap-4 hover:border-[var(--primary)] transition">
-                  <img src={m.user.photos?.[0] || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80"} alt="" className="w-16 h-16 rounded-full object-cover" />
+                  <img src={photoSrc(m.user.photos?.[0])} alt="" className="w-16 h-16 rounded-full object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="font-serif text-xl flex items-center gap-1">{m.user.name} {m.user.verified_badge && <SealCheck size={16} weight="fill" className="text-[var(--gold)]" />}</p>
                     <p className="text-sm text-[var(--muted)] truncate">{m.last_message?.text || "Say hello"}</p>

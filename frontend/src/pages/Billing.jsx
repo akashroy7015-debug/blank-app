@@ -3,6 +3,7 @@ import api from "@/api";
 import AppShell from "@/components/AppShell";
 import { toast } from "sonner";
 import { useAuth } from "@/auth";
+import { formatMoney } from "@/currency";
 
 export default function Billing() {
   const [tx, setTx] = useState([]);
@@ -53,7 +54,7 @@ export default function Billing() {
                     <tr key={t.tx_id} className="border-b border-[var(--border)]" data-testid={`tx-row-${t.tx_id}`}>
                       <td className="p-3">{new Date(t.created_at).toLocaleString()}</td>
                       <td className="p-3">{t.package_id}</td>
-                      <td className="p-3 font-serif">${t.amount.toFixed(2)}</td>
+                      <td className="p-3 font-serif">{formatMoney(t.amount, t.currency)}</td>
                       <td className="p-3"><span className={`tag-chip ${t.payment_status === "paid" ? "text-[var(--success)] border-[var(--success)]" : ""}`}>{t.payment_status}</span></td>
                     </tr>
                   ))}

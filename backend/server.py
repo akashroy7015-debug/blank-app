@@ -13,8 +13,8 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, Cookie
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Header, Cookie, UploadFile, File, Query
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 import jwt
 import bcrypt
 import httpx
+import requests
 
 # ---------- env ----------
 ROOT_DIR = Path(__file__).parent
@@ -62,6 +63,42 @@ def check_pw(pw: str, h: str) -> bool:
         return bcrypt.checkpw(pw.encode(), h.encode())
     except Exception:
         return False
+
+# ---------- object storage (Emergent) ----------
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+APP_NAME = "sparkd"
+_storage_key: Optional[str] = None
+ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB
+MIME_EXT = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif"}
+
+def init_storage() -> str:
+    global _storage_key
+    if _storage_key:
+        return _storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_LLM_KEY}, timeout=30)
+    resp.raise_for_status()
+    _storage_key = resp.json()["storage_key"]
+    return _storage_key
+
+def storage_put(path: str, data: bytes, content_type: str) -> Dict[str, Any]:
+    key = init_storage()
+    r = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120,
+    )
+    r.raise_for_status()
+    return r.json()
+
+def storage_get(path: str):
+    key = init_storage()
+    r = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60,
+    )
+    r.raise_for_status()
+    return r.content, r.headers.get("Content-Type", "application/octet-stream")
 
 def make_token(user_id: str) -> str:
     payload = {
@@ -149,6 +186,7 @@ class CookieConsentReq(BaseModel):
 class CheckoutReq(BaseModel):
     package_id: str  # basic_monthly | premium_monthly | platinum_monthly | swipe_pack
     origin_url: str
+    currency: Optional[str] = "usd"
 
 class ModerateTextReq(BaseModel):
     text: str
@@ -161,13 +199,38 @@ class AdminActionReq(BaseModel):
     action: str  # warn, suspend, ban, dismiss
     reason: str = ""
 
-# ---------- subscription packages (server side prices) ----------
+# ---------- subscription packages (server-side prices, multi-currency) ----------
 PACKAGES: Dict[str, Dict[str, Any]] = {
-    "basic_monthly":    {"name": "Basic",    "amount": 7.99,  "currency": "usd", "kind": "subscription", "perks": ["Unlimited likes", "Rewind last swipe", "5 super likes/day"]},
-    "premium_monthly":  {"name": "Premium",  "amount": 14.99, "currency": "usd", "kind": "subscription", "perks": ["Everything in Basic", "See who liked you", "Boost 1x/week", "Read receipts", "10 super likes/day"]},
-    "platinum_monthly": {"name": "Platinum", "amount": 24.99, "currency": "usd", "kind": "subscription", "perks": ["Everything in Premium", "Priority likes", "Message before match", "Boost 1x/day", "Unlimited super likes"]},
-    "swipe_pack":       {"name": "Swipe Pack (+10 swipes)", "amount": 0.99, "currency": "usd", "kind": "one_time", "perks": ["+10 extra swipes"]},
+    "basic_monthly":    {"name": "Basic",    "kind": "subscription", "perks": ["Unlimited likes", "Rewind last swipe", "5 super likes/day"]},
+    "premium_monthly":  {"name": "Premium",  "kind": "subscription", "perks": ["Everything in Basic", "See who liked you", "Boost 1x/week", "Read receipts", "10 super likes/day"]},
+    "platinum_monthly": {"name": "Platinum", "kind": "subscription", "perks": ["Everything in Premium", "Priority likes", "Message before match", "Boost 1x/day", "Unlimited super likes"]},
+    "swipe_pack":       {"name": "Swipe Pack (+10 swipes)", "kind": "one_time", "perks": ["+10 extra swipes"]},
 }
+
+PRICES: Dict[str, Dict[str, float]] = {
+    "usd": {"basic_monthly": 7.99,  "premium_monthly": 14.99, "platinum_monthly": 24.99, "swipe_pack": 0.99},
+    "inr": {"basic_monthly": 199.0, "premium_monthly": 399.0, "platinum_monthly": 549.0, "swipe_pack": 100.0},
+}
+
+CURRENCY_META: Dict[str, Dict[str, Any]] = {
+    "usd": {"symbol": "$", "code": "USD", "decimals": 2},
+    "inr": {"symbol": "₹", "code": "INR", "decimals": 0},
+}
+
+COMPARISON: Dict[str, Dict[str, Any]] = {
+    "usd": {"tinder": {"plus": 9.99, "gold": 19.99, "platinum": 29.99}, "bumble": {"premium": 17.99, "premium_plus": 35.99}},
+    "inr": {"tinder": {"plus": 299.0, "gold": 749.0, "platinum": 1099.0}, "bumble": {"premium": 599.0, "premium_plus": 1299.0}},
+}
+
+def _normalize_currency(c: Optional[str]) -> str:
+    if not c:
+        return "usd"
+    c = c.lower().strip()
+    return c if c in PRICES else "usd"
+
+def get_price(package_id: str, currency: str) -> float:
+    currency = _normalize_currency(currency)
+    return PRICES[currency][package_id]
 
 # ---------- auth dep ----------
 async def get_current_user(
@@ -726,14 +789,74 @@ async def cookie_consent(req: CookieConsentReq, request: Request):
 async def moderate(req: ModerateTextReq):
     return await ai_moderate_text(req.text)
 
+# ---- PHOTO UPLOAD ----
+@api.post("/upload/photo")
+async def upload_photo(file: UploadFile = File(...), user: Dict = Depends(get_current_user)):
+    if (file.content_type or "").lower() not in ALLOWED_IMAGE_MIMES:
+        raise HTTPException(400, "Only JPEG, PNG, WEBP, or GIF allowed")
+    data = await file.read()
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(413, "Image must be 8 MB or smaller")
+    if len(data) < 200:
+        raise HTTPException(400, "Image looks empty or corrupted")
+    ct = file.content_type.lower()
+    ext = MIME_EXT.get(ct, "bin")
+    path = f"{APP_NAME}/photos/{user['user_id']}/{uuid.uuid4().hex}.{ext}"
+    try:
+        result = storage_put(path, data, ct)
+    except Exception as e:
+        log.error(f"upload failed: {e}")
+        raise HTTPException(503, "Storage unavailable")
+    record = {
+        "file_id": gen_id("file"),
+        "user_id": user["user_id"],
+        "storage_path": result.get("path", path),
+        "content_type": ct,
+        "size": len(data),
+        "is_deleted": False,
+        "created_at": iso(now_utc()),
+    }
+    await db.files.insert_one(record)
+    return {"file_id": record["file_id"], "path": record["storage_path"], "url": f"/api/files/{record['storage_path']}", "size": record["size"]}
+
+@api.get("/files/{path:path}")
+async def get_file(path: str, auth: Optional[str] = Query(None)):
+    # img tags can't send Authorization headers, so accept ?auth=<jwt> as fallback.
+    # Any signed-in user can view any photo (profiles are public-by-design in a dating app).
+    user_id = None
+    if auth:
+        user_id = decode_token(auth)
+    if not user_id:
+        # also accept Bearer
+        pass
+    rec = await db.files.find_one({"storage_path": path, "is_deleted": False}, {"_id": 0})
+    if not rec:
+        raise HTTPException(404, "File not found")
+    try:
+        data, ct = storage_get(path)
+    except Exception as e:
+        log.error(f"file fetch err: {e}")
+        raise HTTPException(503, "Storage unavailable")
+    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "public, max-age=86400"})
+
+@api.delete("/upload/photo")
+async def delete_photo(path: str, user: Dict = Depends(get_current_user)):
+    rec = await db.files.find_one({"storage_path": path, "user_id": user["user_id"]}, {"_id": 0})
+    if not rec:
+        raise HTTPException(404, "Not found")
+    await db.files.update_one({"storage_path": path}, {"$set": {"is_deleted": True, "deleted_at": iso(now_utc())}})
+    # remove from user's photos array too
+    await db.users.update_one({"user_id": user["user_id"]}, {"$pull": {"photos": f"/api/files/{path}"}})
+    return {"ok": True}
+
 # ---- STRIPE ----
 @api.post("/checkout/session")
 async def create_checkout(req: CheckoutReq, request: Request, user: Dict = Depends(get_current_user)):
     if req.package_id not in PACKAGES:
         raise HTTPException(400, "Invalid package")
     pkg = PACKAGES[req.package_id]
-    amount = float(pkg["amount"])
-    currency = pkg["currency"]
+    currency = _normalize_currency(req.currency)
+    amount = float(get_price(req.package_id, currency))
 
     success_url = f"{req.origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{req.origin_url}/app/plans"
@@ -746,7 +869,7 @@ async def create_checkout(req: CheckoutReq, request: Request, user: Dict = Depen
         ck_req = CheckoutSessionRequest(
             amount=amount, currency=currency,
             success_url=success_url, cancel_url=cancel_url,
-            metadata={"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"]},
+            metadata={"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"], "currency": currency},
         )
         session = await stripe.create_checkout_session(ck_req)
     except Exception as e:
@@ -763,10 +886,10 @@ async def create_checkout(req: CheckoutReq, request: Request, user: Dict = Depen
         "kind": pkg["kind"],
         "payment_status": "initiated",
         "status": "open",
-        "metadata": {"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"]},
+        "metadata": {"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"], "currency": currency},
         "created_at": iso(now_utc()),
     })
-    return {"url": session.url, "session_id": session.session_id}
+    return {"url": session.url, "session_id": session.session_id, "amount": amount, "currency": currency}
 
 @api.get("/checkout/status/{session_id}")
 async def checkout_status(session_id: str, request: Request, user: Dict = Depends(get_current_user)):
@@ -845,13 +968,26 @@ async def cancel_subscription(user: Dict = Depends(get_current_user)):
     return {"ok": True}
 
 @api.get("/plans")
-async def get_plans():
-    return {"plans": [
-        {"id": k, **v} for k, v in PACKAGES.items()
-    ], "comparison": {
-        "tinder": {"plus": 9.99, "gold": 19.99, "platinum": 29.99},
-        "bumble": {"premium": 17.99, "premium_plus": 35.99},
-    }}
+async def get_plans(currency: str = Query("usd")):
+    currency = _normalize_currency(currency)
+    meta = CURRENCY_META[currency]
+    plans = []
+    for k, v in PACKAGES.items():
+        plans.append({
+            "id": k,
+            "name": v["name"],
+            "kind": v["kind"],
+            "perks": v["perks"],
+            "amount": PRICES[currency][k],
+            "currency": currency,
+        })
+    return {
+        "plans": plans,
+        "currency": currency,
+        "currency_meta": meta,
+        "comparison": COMPARISON[currency],
+        "supported_currencies": [{"code": c, **CURRENCY_META[c]} for c in PRICES.keys()],
+    }
 
 # ---- ADMIN ----
 @api.get("/admin/stats")
@@ -1004,6 +1140,11 @@ async def seed_db():
 @app.on_event("startup")
 async def startup():
     await seed_db()
+    try:
+        init_storage()
+        log.info("Object storage initialized.")
+    except Exception as e:
+        log.error(f"Storage init failed (uploads will return 503): {e}")
     log.info("Sparkd seeded.")
 
 @app.on_event("shutdown")

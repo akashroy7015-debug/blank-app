@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@/api";
 import { useAuth } from "@/auth";
 import { toast } from "sonner";
+import PhotoUploader from "@/components/PhotoUploader";
 
 const INTERESTS = ["Travel", "Coffee", "Hiking", "Films", "Books", "Music", "Art", "Cooking", "Dogs", "Cats", "Yoga", "Running", "Gaming", "Wine", "Photography", "Design", "Tech"];
 const PROMPT_QS = [
@@ -18,7 +19,7 @@ export default function Onboarding() {
   const [form, setForm] = useState({
     gender: "",
     interested_in: "",
-    photos: ["", "", ""],
+    photos: [],
     bio: "",
     interests: [],
     prompts: PROMPT_QS.map(q => ({ q, a: "" })),
@@ -30,13 +31,15 @@ export default function Onboarding() {
     setForm(f => ({ ...f, interests: f.interests.includes(i) ? f.interests.filter(x => x !== i) : f.interests.length >= 10 ? f.interests : [...f.interests, i] }));
   };
 
+  const photos = form.photos.filter(Boolean);
+
   const submit = async () => {
     setBusy(true);
     try {
       await api.post("/profile/complete", {
         gender: form.gender,
         interested_in: form.interested_in,
-        photos: form.photos.filter(Boolean),
+        photos,
         bio: form.bio,
         prompts: form.prompts.filter(p => p.a.trim()),
         interests: form.interests,
@@ -91,18 +94,14 @@ export default function Onboarding() {
         {step === 2 && (
           <div>
             <h1 className="font-serif text-4xl">Add your photos</h1>
-            <p className="text-[var(--muted)] mt-2">Paste image URLs (Unsplash, your CDN, etc.) — at least one.</p>
-            <div className="mt-8 grid grid-cols-3 gap-3">
-              {form.photos.map((p, i) => (
-                <div key={i} className="surface aspect-[3/4] overflow-hidden relative">
-                  {p ? <img src={p} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full grid place-items-center text-xs text-[var(--muted)]">Photo {i+1}</div>}
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 space-y-3">
-              {form.photos.map((p, i) => (
-                <input key={i} placeholder={`https://… (photo ${i+1})`} value={p} onChange={e => setForm(f => ({ ...f, photos: f.photos.map((x, idx) => idx === i ? e.target.value : x) }))} className="input-field" data-testid={`onboarding-photo-${i}`} />
-              ))}
+            <p className="text-[var(--muted)] mt-2">Upload at least one. JPEG, PNG, WEBP — up to 6 photos.</p>
+            <div className="mt-8">
+              <PhotoUploader
+                photos={form.photos}
+                onChange={(arr) => setForm(f => ({ ...f, photos: arr }))}
+                max={6}
+                testidPrefix="onboarding-photo"
+              />
             </div>
             <div className="mt-10 flex justify-between">
               <button onClick={() => setStep(1)} className="btn-ghost" data-testid="onboarding-step2-back">Back</button>
