@@ -24,7 +24,7 @@ export default function Signup() {
     if (!form.age18) { toast.error("You must confirm you are 18 or older"); return; }
     if (!form.dob) { toast.error("Please enter your date of birth"); return; }
     const age = (Date.now() - new Date(form.dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    if (age < 18) { toast.error("Sparkd is for adults 18+"); return; }
+    if (age < 18) { toast.error("sparQ is for adults 18+"); return; }
     setStep(2);
   };
 
@@ -72,14 +72,14 @@ export default function Signup() {
         <img src="https://images.unsplash.com/photo-1713528757608-cac0e6c26155?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80" alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
         <div className="absolute bottom-12 left-12 right-12">
-          <Link to="/" className="font-serif text-2xl">Sparkd<span className="text-[var(--primary)]">.</span></Link>
+          <Link to="/" className="font-serif text-2xl">sparQ<span className="text-[var(--primary)]">.</span></Link>
           <p className="font-serif text-4xl mt-8 leading-tight">"Curated. Verified.<br />Yours."</p>
         </div>
       </div>
 
       <div className="flex items-center justify-center px-6 md:px-16 py-16">
         <div className="w-full max-w-md">
-          <Link to="/" className="md:hidden font-serif text-2xl">Sparkd<span className="text-[var(--primary)]">.</span></Link>
+          <Link to="/" className="md:hidden font-serif text-2xl">sparQ<span className="text-[var(--primary)]">.</span></Link>
 
           {step === 1 && (
             <>
@@ -87,7 +87,7 @@ export default function Signup() {
               <h1 className="font-serif text-4xl mt-2">You must be 18+</h1>
               <div className="surface p-5 mt-6 flex items-start gap-3">
                 <ShieldCheck size={22} weight="duotone" className="text-[var(--primary)] mt-1" />
-                <p className="text-sm text-[var(--secondary-fg)] leading-relaxed">Sparkd is strictly for adults. We may use AI-assisted age verification and ID checks for premium badges. Misrepresentation will lead to a permanent ban.</p>
+                <p className="text-sm text-[var(--secondary-fg)] leading-relaxed">sparQ is strictly for adults. We may use AI-assisted age verification and ID checks for premium badges. Misrepresentation will lead to a permanent ban.</p>
               </div>
               <form onSubmit={onAgeContinue} className="mt-8 space-y-4">
                 <div>
@@ -125,7 +125,7 @@ export default function Signup() {
                   ].map(c => (
                     <label key={c.k} className="flex items-start gap-3 text-sm text-[var(--secondary-fg)]">
                       <input type="checkbox" checked={form[c.k]} onChange={e => set(c.k, e.target.checked)} data-testid={`signup-${c.k}-checkbox`} className="mt-1" />
-                      <span>I accept Sparkd's <Link to={`/legal/${c.slug}`} target="_blank" className="text-[var(--primary)] underline">{c.label}</Link>.</span>
+                      <span>I accept sparQ's <Link to={`/legal/${c.slug}`} target="_blank" className="text-[var(--primary)] underline">{c.label}</Link>.</span>
                     </label>
                   ))}
                 </div>

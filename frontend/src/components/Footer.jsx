@@ -21,7 +21,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 md:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div>
-            <div className="font-serif text-3xl mb-3">Sparkd<span className="text-[var(--primary)]">.</span></div>
+            <div className="font-serif text-3xl mb-3">sparQ<span className="text-[var(--primary)]">.</span></div>
             <p className="text-sm text-[var(--muted)] leading-relaxed">A premium, trust-first dating experience designed for real connection.</p>
           </div>
           <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
@@ -34,7 +34,7 @@ export default function Footer() {
         </div>
         <div className="divider-line my-10" />
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <p className="text-xs text-[var(--muted)]">© {new Date().getFullYear()} Sparkd. All rights reserved.</p>
+          <p className="text-xs text-[var(--muted)]">© {new Date().getFullYear()} sparQ. All rights reserved.</p>
           <p className="text-xs text-[var(--muted)]">Designed for adults 18+. AI-assisted moderation enabled.</p>
         </div>
       </div>

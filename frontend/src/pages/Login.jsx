@@ -36,14 +36,14 @@ export default function Login() {
         <img src="https://images.unsplash.com/photo-1594250945179-6ace32113329?crop=entropy&cs=srgb&fm=jpg&w=1000&q=80" alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
         <div className="absolute bottom-12 left-12 right-12">
-          <Link to="/" className="font-serif text-2xl">Sparkd<span className="text-[var(--primary)]">.</span></Link>
+          <Link to="/" className="font-serif text-2xl">sparQ<span className="text-[var(--primary)]">.</span></Link>
           <p className="font-serif text-4xl mt-8 leading-tight">"Real people. Real intent."</p>
         </div>
       </div>
 
       <div className="flex items-center justify-center px-6 md:px-16 py-16">
         <div className="w-full max-w-md">
-          <Link to="/" className="md:hidden font-serif text-2xl">Sparkd<span className="text-[var(--primary)]">.</span></Link>
+          <Link to="/" className="md:hidden font-serif text-2xl">sparQ<span className="text-[var(--primary)]">.</span></Link>
           <p className="smallcaps text-[var(--primary)] mt-12 md:mt-0">Welcome back</p>
           <h1 className="font-serif text-4xl mt-2">Log in</h1>
 

@@ -1,4 +1,4 @@
-# Sparkd — Product Requirements Document
+# sparQ — Product Requirements Document
 
 **Created:** 2026-02
 **Last updated:** 2026-02

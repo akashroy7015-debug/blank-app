@@ -1,4 +1,4 @@
-"""Sparkd Dating App — Backend API
+"""sparQ Dating App — Backend API
 FastAPI server with auth (JWT + OTP + Emergent Google), swipe deck, matches,
 chat, Stripe subscriptions, safety/reports, admin compliance, AI moderation.
 """
@@ -51,7 +51,7 @@ def razorpay_live() -> bool:
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-app = FastAPI(title="Sparkd API")
+app = FastAPI(title="sparQ API")
 api = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
@@ -359,7 +359,7 @@ async def ai_moderate_text(text: str) -> Dict[str, Any]:
 # ---------- routes ----------
 @api.get("/")
 async def root():
-    return {"app": "Sparkd", "status": "ok", "time": iso(now_utc())}
+    return {"app": "sparQ", "status": "ok", "time": iso(now_utc())}
 
 # ---- AUTH ----
 @api.post("/auth/register")
@@ -373,7 +373,7 @@ async def register(req: RegisterReq):
         raise HTTPException(400, "Invalid date of birth")
     age_years = (now_utc() - dob).days / 365.25
     if age_years < 18:
-        raise HTTPException(403, "You must be 18+ to use Sparkd")
+        raise HTTPException(403, "You must be 18+ to use sparQ")
 
     existing = await db.users.find_one({"email": req.email.lower()}, {"_id": 0})
     if existing:
@@ -1074,7 +1074,7 @@ async def razorpay_create_order(req: RazorpayOrderReq, user: Dict = Depends(get_
         "amount": amount_paise,
         "currency": "INR",
         "key_id": RAZORPAY_KEY_ID if razorpay_live() else "",
-        "name": "Sparkd",
+        "name": "sparQ",
         "description": pkg["name"],
         "prefill": {"name": user.get("name", ""), "email": user.get("email", "")},
         "notes": notes,
@@ -1227,12 +1227,12 @@ DEMO_PROFILES = [
 
 async def seed_db():
     # admin
-    if not await db.users.find_one({"email": "admin@sparkd.app"}):
+    if not await db.users.find_one({"email": "admin@sparq.app"}):
         await db.users.insert_one({
             "user_id": "user_admin0001",
-            "email": "admin@sparkd.app",
-            "password_hash": hash_pw("AdminSparkd2026!"),
-            "name": "Sparkd Admin",
+            "email": "admin@sparq.app",
+            "password_hash": hash_pw("AdminsparQ2026!"),
+            "name": "sparQ Admin",
             "role": "admin",
             "status": "active",
             "email_verified": True,
@@ -1247,11 +1247,11 @@ async def seed_db():
             "interests": [],
         })
     # demo user
-    if not await db.users.find_one({"email": "demo@sparkd.app"}):
+    if not await db.users.find_one({"email": "demo@sparq.app"}):
         await db.users.insert_one({
             "user_id": "user_demo00001",
-            "email": "demo@sparkd.app",
-            "password_hash": hash_pw("DemoSparkd2026!"),
+            "email": "demo@sparq.app",
+            "password_hash": hash_pw("DemosparQ2026!"),
             "name": "Demo User",
             "dob": "1995-06-15",
             "gender": "any",
@@ -1267,19 +1267,19 @@ async def seed_db():
             "safety_settings": {"blur_photos_until_match": False, "verified_only_mode": False, "location_masking": True, "private_browsing": False, "emergency_contact": ""},
             "privacy_settings": {"profile_visible": True, "show_distance": True, "show_age": True, "ad_personalization": True, "push_notifications": True, "email_notifications": True},
             "photos": ["https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=900&q=80"],
-            "bio": "Welcome to Sparkd! Swipe to meet people.",
+            "bio": "Welcome to sparQ! Swipe to meet people.",
             "interests": ["design", "coffee", "books"],
             "consents": {"terms": True, "privacy": True, "community": True},
         })
     # demo swipe targets
     for i, p in enumerate(DEMO_PROFILES):
-        email = f"{p['name'].lower()}@sparkd.demo"
+        email = f"{p['name'].lower()}@sparq.demo"
         if await db.users.find_one({"email": email}):
             continue
         await db.users.insert_one({
             "user_id": f"user_demo_{i:04d}",
             "email": email,
-            "password_hash": hash_pw("DemoSparkd2026!"),
+            "password_hash": hash_pw("DemosparQ2026!"),
             "name": p["name"],
             "dob": "1996-01-01",
             "gender": p["gender"],
@@ -1310,7 +1310,7 @@ async def startup():
         log.info("Object storage initialized.")
     except Exception as e:
         log.error(f"Storage init failed (uploads will return 503): {e}")
-    log.info("Sparkd seeded.")
+    log.info("sparQ seeded.")
 
 @app.on_event("shutdown")
 async def shutdown():

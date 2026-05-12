@@ -14,7 +14,7 @@ export default function Landing() {
       <header className="absolute top-0 inset-x-0 z-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
           <Link to="/" className="font-serif text-2xl tracking-tight" data-testid="brand-link">
-            Sparkd<span className="text-[var(--primary)]">.</span>
+            sparQ<span className="text-[var(--primary)]">.</span>
           </Link>
           <nav className="flex items-center gap-3">
             <Link to="/login" data-testid="header-login" className="text-sm smallcaps text-[var(--secondary-fg)] hover:text-[var(--text)]">
@@ -48,7 +48,7 @@ export default function Landing() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.2 }}
               className="mt-7 text-lg text-[var(--secondary-fg)] max-w-xl leading-relaxed"
             >
-              Sparkd is a premium dating app built around safety, verified profiles, and meaningful matches.
+              sparQ is a premium dating app built around safety, verified profiles, and meaningful matches.
               10 free swipes a day.
             </motion.p>
             <motion.div

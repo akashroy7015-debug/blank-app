@@ -25,7 +25,7 @@ export default function Settings() {
       const { data } = await api.get("/privacy/export");
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = "sparkd-data-export.json"; a.click();
+      const a = document.createElement("a"); a.href = url; a.download = "sparq-data-export.json"; a.click();
       toast.success("Your data is downloading.");
     } catch { toast.error("Could not export"); }
   };
@@ -48,7 +48,7 @@ export default function Settings() {
     { k: "profile_visible", l: "Profile visible", d: "Show your profile in others' decks." },
     { k: "show_distance", l: "Show distance", d: "Display distance on your profile." },
     { k: "show_age", l: "Show age", d: "Display your age on your profile." },
-    { k: "ad_personalization", l: "Ad personalization", d: "Allow Sparkd to personalize ads." },
+    { k: "ad_personalization", l: "Ad personalization", d: "Allow sparQ to personalize ads." },
     { k: "push_notifications", l: "Push notifications", d: "Match & message alerts." },
     { k: "email_notifications", l: "Email notifications", d: "Updates and tips via email." },
   ];

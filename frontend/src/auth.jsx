@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
   }, [checkAuth]);
 
   const loginWithToken = (token, userData) => {
-    localStorage.setItem("sparkd_token", token);
+    localStorage.setItem("sparq_token", token);
     if (userData) setUser(userData);
     return checkAuth();
   };
@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try { await api.post("/auth/logout"); }
     catch (e) { console.warn("logout call failed (clearing local state anyway)", e); }
-    localStorage.removeItem("sparkd_token");
+    localStorage.removeItem("sparq_token");
     setUser(null);
   };
 

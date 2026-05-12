@@ -116,7 +116,7 @@ export default function Plans() {
         )}
 
         <div className="mt-16 surface p-7">
-          <p className="smallcaps text-[var(--primary)]">Why Sparkd</p>
+          <p className="smallcaps text-[var(--primary)]">Why sparQ</p>
           <h2 className="font-serif text-3xl mt-2">Built for real connection.</h2>
           <p className="text-sm text-[var(--secondary-fg)] mt-4 max-w-2xl leading-relaxed">
             Verified profiles, AI-assisted moderation, women-first safety tools, and clean monthly pricing —

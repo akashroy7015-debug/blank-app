@@ -5,14 +5,14 @@ export default function CookieBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("sparkd_cookies")) setShow(true);
+    if (!localStorage.getItem("sparq_cookies")) setShow(true);
   }, []);
 
   const accept = async (mode) => {
     const consent = mode === "all"
       ? { essential: true, analytics: true, marketing: true }
       : { essential: true, analytics: false, marketing: false };
-    localStorage.setItem("sparkd_cookies", JSON.stringify(consent));
+    localStorage.setItem("sparq_cookies", JSON.stringify(consent));
     try { await api.post("/privacy/cookie-consent", consent); }
     catch (e) { console.warn("cookie-consent record failed", e); }
     setShow(false);
@@ -26,7 +26,7 @@ export default function CookieBanner() {
     >
       <p className="smallcaps text-[var(--muted)] mb-2">Cookie consent</p>
       <p className="text-sm text-[var(--secondary-fg)] mb-4 leading-relaxed">
-        Sparkd uses cookies to keep you signed in, measure performance, and personalize your experience.
+        sparQ uses cookies to keep you signed in, measure performance, and personalize your experience.
         Read our <a href="/legal/cookies" className="underline text-[var(--accent)]">Cookie Policy</a>.
       </p>
       <div className="flex gap-2">

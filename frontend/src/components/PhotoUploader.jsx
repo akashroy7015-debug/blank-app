@@ -8,7 +8,7 @@ import { UploadSimple, X, Plus } from "@phosphor-icons/react";
 export default function PhotoUploader({ photos, onChange, max = 6, testidPrefix = "photo" }) {
   const inputRef = useRef();
   const [uploading, setUploading] = useState(false);
-  const token = typeof window !== "undefined" ? localStorage.getItem("sparkd_token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("sparq_token") : null;
 
   const previewSrc = (p) => {
     if (!p) return null;

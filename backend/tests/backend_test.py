@@ -1,4 +1,4 @@
-"""Sparkd backend API tests - comprehensive coverage of auth, swipes, matches,
+"""sparQ backend API tests - comprehensive coverage of auth, swipes, matches,
 safety, privacy, checkout (Stripe), admin, AI moderation."""
 import os
 import uuid
@@ -10,10 +10,10 @@ from datetime import datetime, timedelta, timezone
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://swipe-connect-122.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@sparkd.app"
-ADMIN_PASSWORD = "AdminSparkd2026!"
-DEMO_EMAIL = "demo@sparkd.app"
-DEMO_PASSWORD = "DemoSparkd2026!"
+ADMIN_EMAIL = "admin@sparq.app"
+ADMIN_PASSWORD = "AdminsparQ2026!"
+DEMO_EMAIL = "demo@sparq.app"
+DEMO_PASSWORD = "DemosparQ2026!"
 
 
 # ---------- fixtures ----------
@@ -49,7 +49,7 @@ def test_root_ok(s):
     r = s.get(f"{API}/")
     assert r.status_code == 200
     body = r.json()
-    assert body["app"] == "Sparkd"
+    assert body["app"] == "sparQ"
     assert body["status"] == "ok"
 
 

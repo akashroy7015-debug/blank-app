@@ -14,7 +14,7 @@ export default function Legal() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <header className="border-b border-[var(--border)]">
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-5 flex items-center justify-between">
-          <Link to="/" className="font-serif text-2xl">Sparkd<span className="text-[var(--primary)]">.</span></Link>
+          <Link to="/" className="font-serif text-2xl">sparQ<span className="text-[var(--primary)]">.</span></Link>
           <Link to="/" className="smallcaps text-[var(--muted)] hover:text-[var(--text)] flex items-center gap-1" data-testid="legal-back-home"><ArrowLeft size={14}/> Home</Link>
         </div>
       </header>

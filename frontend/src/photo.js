@@ -6,7 +6,7 @@ export function photoSrc(p) {
   if (p.startsWith("http")) return p;
   if (p.startsWith("/api/")) {
     const base = process.env.REACT_APP_BACKEND_URL || "";
-    const token = typeof window !== "undefined" ? localStorage.getItem("sparkd_token") : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("sparq_token") : null;
     return `${base}${p}${token ? `?auth=${token}` : ""}`;
   }
   return p;

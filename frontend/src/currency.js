@@ -1,7 +1,7 @@
 // Detect user's preferred currency. Returns "inr" for India, otherwise "usd".
 // Persists user override in localStorage.
 
-const KEY = "sparkd_currency";
+const KEY = "sparq_currency";
 
 export function detectCurrency() {
   // 1. respect explicit user choice

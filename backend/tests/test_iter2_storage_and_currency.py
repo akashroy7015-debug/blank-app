@@ -1,4 +1,4 @@
-"""Sparkd iteration-2 backend tests:
+"""sparQ iteration-2 backend tests:
 - multi-currency /api/plans
 - /api/checkout/session with currency
 - /api/upload/photo (POST, GET /api/files/{path}, DELETE)
@@ -14,10 +14,10 @@ import requests
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@sparkd.app"
-ADMIN_PASSWORD = "AdminSparkd2026!"
-DEMO_EMAIL = "demo@sparkd.app"
-DEMO_PASSWORD = "DemoSparkd2026!"
+ADMIN_EMAIL = "admin@sparq.app"
+ADMIN_PASSWORD = "AdminsparQ2026!"
+DEMO_EMAIL = "demo@sparq.app"
+DEMO_PASSWORD = "DemosparQ2026!"
 
 
 # ---------- helpers ----------

@@ -6,7 +6,7 @@ export const API = `${BACKEND_URL}/api`;
 const client = axios.create({ baseURL: API, withCredentials: true });
 
 client.interceptors.request.use((cfg) => {
-  const t = localStorage.getItem("sparkd_token");
+  const t = localStorage.getItem("sparq_token");
   if (t) cfg.headers.Authorization = `Bearer ${t}`;
   return cfg;
 });

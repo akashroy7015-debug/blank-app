@@ -22,7 +22,7 @@ export default function AppShell({ children }) {
       <header className="sticky top-0 z-30 glass border-b border-[var(--border)]">
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           <Link to="/app/swipe" data-testid="brand-home" className="font-serif text-2xl tracking-tight">
-            Sparkd<span className="text-[var(--primary)]">.</span>
+            sparQ<span className="text-[var(--primary)]">.</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {items.map(it => {
