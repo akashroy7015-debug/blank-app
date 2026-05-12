@@ -252,9 +252,10 @@ async def consume_swipe(user_id: str):
 # ---------- AI moderation ----------
 async def ai_moderate_text(text: str) -> Dict[str, Any]:
     """Use Emergent LLM key + Claude to moderate text content. Falls back to rule-based on error."""
-    bad_words = ["fuck", "bitch", "asshole", "kill yourself", "kys", "rape", "n-word", "fag"]
+    import re as _re
+    bad_words = ["fuck", "bitch", "asshole", "kill yourself", "kys", "rape", "faggot"]
     lower = text.lower()
-    rule_flag = any(b in lower for b in bad_words)
+    rule_flag = any(_re.search(rf"\b{_re.escape(b)}\b", lower) for b in bad_words)
     if not EMERGENT_LLM_KEY:
         return {"flagged": rule_flag, "category": "rules" if rule_flag else "clean", "score": 1.0 if rule_flag else 0.0, "via": "rules"}
     try:
@@ -520,6 +521,11 @@ async def swipe_deck(limit: int = 10, user: Dict = Depends(get_current_user)):
 async def swipe_action(req: SwipeActionReq, user: Dict = Depends(get_current_user)):
     if req.action not in ("like", "pass", "super"):
         raise HTTPException(400, "Invalid action")
+    if req.target_user_id == user["user_id"]:
+        raise HTTPException(400, "Cannot swipe on yourself")
+    target = await db.users.find_one({"user_id": req.target_user_id}, {"_id": 0, "user_id": 1, "status": 1})
+    if not target or target.get("status") == "banned":
+        raise HTTPException(404, "Target not available")
     await consume_swipe(user["user_id"])
     await db.swipes.insert_one({
         "swipe_id": gen_id("swipe"),
@@ -631,6 +637,11 @@ async def icebreaker(match_id: str, user: Dict = Depends(get_current_user)):
 # ---- SAFETY ----
 @api.post("/safety/report")
 async def report_user(req: ReportReq, user: Dict = Depends(get_current_user)):
+    target = await db.users.find_one({"user_id": req.target_user_id}, {"_id": 0, "user_id": 1})
+    if not target:
+        raise HTTPException(404, "Target user not found")
+    if req.target_user_id == user["user_id"]:
+        raise HTTPException(400, "Cannot report yourself")
     doc = {
         "report_id": gen_id("rep"),
         "reporter_id": user["user_id"],
@@ -693,7 +704,7 @@ async def export_data(user: Dict = Depends(get_current_user)):
 @api.post("/privacy/delete-account")
 async def delete_account(user: Dict = Depends(get_current_user)):
     uid = user["user_id"]
-    await db.users.update_one({"user_id": uid}, {"$set": {"status": "deleted", "deleted_at": iso(now_utc())}, "$unset": {"email": "", "name": "", "photos": "", "bio": "", "prompts": "", "interests": ""}})
+    await db.users.update_one({"user_id": uid}, {"$set": {"status": "deleted", "deleted_at": iso(now_utc()), "privacy_settings.profile_visible": False, "onboarded": False}, "$unset": {"name": "", "photos": "", "bio": "", "prompts": "", "interests": ""}})
     await db.swipes.delete_many({"user_id": uid})
     await db.messages.update_many({"sender_id": uid}, {"$set": {"text": "[deleted]"}})
     await db.user_sessions.delete_many({"user_id": uid})
@@ -762,14 +773,18 @@ async def checkout_status(session_id: str, request: Request, user: Dict = Depend
     tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if not tx:
         raise HTTPException(404, "Transaction not found")
+    # If already finalized via webhook, return DB state without re-calling Stripe
+    if tx.get("payment_status") in ("paid", "expired", "failed"):
+        return {"status": tx.get("status", "complete"), "payment_status": tx["payment_status"], "amount_total": int(tx["amount"] * 100), "currency": tx["currency"]}
     try:
         from emergentintegrations.payments.stripe.checkout import StripeCheckout
         host_url = str(request.base_url)
         stripe = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=f"{host_url}api/webhook/stripe")
         st = await stripe.get_checkout_status(session_id)
     except Exception as e:
-        log.error(f"stripe status error: {e}")
-        raise HTTPException(502, "Payment status error")
+        log.warning(f"stripe status soft-error (will rely on webhook): {e}")
+        # Gracefully return "open" so frontend keeps polling; webhook will finalize tx
+        return {"status": "open", "payment_status": tx.get("payment_status", "initiated"), "amount_total": int(tx["amount"] * 100), "currency": tx["currency"]}
 
     # idempotent update
     if tx["payment_status"] != "paid" and st.payment_status == "paid":
