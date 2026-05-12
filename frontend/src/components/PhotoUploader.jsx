@@ -54,7 +54,8 @@ export default function PhotoUploader({ photos, onChange, max = 6, testidPrefix 
     onChange(next);
     if (p && p.startsWith("/api/files/")) {
       const path = p.replace(/^\/api\/files\//, "").split("?")[0];
-      try { await api.delete(`/upload/photo?path=${encodeURIComponent(path)}`); } catch { /* ignore */ }
+      try { await api.delete(`/upload/photo?path=${encodeURIComponent(path)}`); }
+      catch (e) { console.warn("photo delete failed", e); }
     }
   };
 

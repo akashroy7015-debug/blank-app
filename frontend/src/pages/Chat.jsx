@@ -21,7 +21,16 @@ export default function Chat() {
     try { const { data } = await api.get(`/matches/${matchId}/messages`); setMessages(data.messages); }
     catch { toast.error("Couldn't load messages"); }
   };
-  useEffect(() => { load(); }, [matchId]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get(`/matches/${matchId}/messages`);
+        if (!cancelled) setMessages(data.messages);
+      } catch { if (!cancelled) toast.error("Couldn't load messages"); }
+    })();
+    return () => { cancelled = true; };
+  }, [matchId]);
   useEffect(() => { scrollRef.current?.scrollTo(0, 1e9); }, [messages]);
 
   const send = async (e) => {

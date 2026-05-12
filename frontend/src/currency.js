@@ -12,13 +12,13 @@ export function detectCurrency() {
   try {
     const langs = [navigator.language, ...(navigator.languages || [])];
     if (langs.some(l => /[-_]IN\b/i.test(l || ""))) return "inr";
-  } catch { /* ignore */ }
+  } catch (e) { console.warn("currency: locale detect failed", e); }
 
   // 3. infer from timezone (Asia/Kolkata, Asia/Calcutta)
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
     if (/Kolkata|Calcutta/i.test(tz)) return "inr";
-  } catch { /* ignore */ }
+  } catch (e) { console.warn("currency: tz detect failed", e); }
 
   return "usd";
 }

@@ -420,7 +420,7 @@ async def register(req: RegisterReq):
     await db.users.insert_one(doc)
 
     # generate OTP
-    code = f"{random.randint(0, 999999):06d}"
+    code = f"{secrets.randbelow(1000000):06d}"
     await db.otp_codes.insert_one({
         "email": req.email.lower(),
         "code": code,
@@ -447,7 +447,7 @@ async def otp_request(req: OTPReq):
     user = await db.users.find_one({"email": req.email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(404, "Email not found")
-    code = f"{random.randint(0, 999999):06d}"
+    code = f"{secrets.randbelow(1000000):06d}"
     await db.otp_codes.insert_one({
         "email": req.email.lower(),
         "code": code,
@@ -847,10 +847,12 @@ async def get_file(path: str, authorization: Optional[str] = Header(None), auth:
         raise HTTPException(404, "File not found")
     try:
         data, ct = storage_get(path)
+        return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "private, max-age=3600"})
+    except HTTPException:
+        raise
     except Exception as e:
         log.error(f"file fetch err: {e}")
         raise HTTPException(503, "Storage unavailable")
-    return Response(content=data, media_type=rec.get("content_type", ct), headers={"Cache-Control": "private, max-age=3600"})
 
 @api.delete("/upload/photo")
 async def delete_photo(path: str, user: Dict = Depends(get_current_user)):
@@ -885,13 +887,14 @@ async def create_checkout(req: CheckoutReq, request: Request, user: Dict = Depen
             metadata={"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"], "currency": currency},
         )
         session = await stripe.create_checkout_session(ck_req)
+        session_url, session_id = session.url, session.session_id
     except Exception as e:
         log.error(f"stripe checkout error: {e}")
         raise HTTPException(502, f"Payment provider error: {str(e)[:120]}")
 
     await db.payment_transactions.insert_one({
         "tx_id": gen_id("tx"),
-        "session_id": session.session_id,
+        "session_id": session_id,
         "user_id": user["user_id"],
         "email": user.get("email"),
         "amount": amount, "currency": currency,
@@ -902,7 +905,7 @@ async def create_checkout(req: CheckoutReq, request: Request, user: Dict = Depen
         "metadata": {"user_id": user["user_id"], "package_id": req.package_id, "kind": pkg["kind"], "currency": currency},
         "created_at": iso(now_utc()),
     })
-    return {"url": session.url, "session_id": session.session_id, "amount": amount, "currency": currency}
+    return {"url": session_url, "session_id": session_id, "amount": amount, "currency": currency}
 
 @api.get("/checkout/status/{session_id}")
 async def checkout_status(session_id: str, request: Request, user: Dict = Depends(get_current_user)):

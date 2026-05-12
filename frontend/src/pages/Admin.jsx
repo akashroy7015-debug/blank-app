@@ -52,6 +52,7 @@ function Overview() {
 function Reports() {
   const [rows, setRows] = useState([]);
   const load = () => api.get("/admin/reports?status=open").then(r => setRows(r.data.reports));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time load on mount; "load" is stable.
   useEffect(() => { load(); }, []);
   const act = async (target, action) => {
     try { await api.post("/admin/action", { target_user_id: target, action, reason: "via admin console" }); toast.success(`Action: ${action}`); load(); }
@@ -86,6 +87,7 @@ function Users() {
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
   const load = () => api.get(`/admin/users?q=${encodeURIComponent(q)}`).then(r => setRows(r.data.users));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional initial load; reload on demand via the Search button.
   useEffect(() => { load(); }, []);
   return (
     <div>

@@ -13,7 +13,8 @@ export default function CookieBanner() {
       ? { essential: true, analytics: true, marketing: true }
       : { essential: true, analytics: false, marketing: false };
     localStorage.setItem("sparkd_cookies", JSON.stringify(consent));
-    try { await api.post("/privacy/cookie-consent", consent); } catch {}
+    try { await api.post("/privacy/cookie-consent", consent); }
+    catch (e) { console.warn("cookie-consent record failed", e); }
     setShow(false);
   };
 
