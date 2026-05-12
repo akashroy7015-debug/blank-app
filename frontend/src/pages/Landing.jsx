@@ -49,7 +49,7 @@ export default function Landing() {
               className="mt-7 text-lg text-[var(--secondary-fg)] max-w-xl leading-relaxed"
             >
               Sparkd is a premium dating app built around safety, verified profiles, and meaningful matches.
-              10 free swipes a day. Plans starting at <span className="text-[var(--text)] font-medium">$7.99</span>.
+              10 free swipes a day.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}
@@ -94,32 +94,27 @@ export default function Landing() {
           <div className="flex items-end justify-between mb-12">
             <div>
               <p className="smallcaps text-[var(--primary)] mb-2">Plans</p>
-              <h2 className="font-serif text-4xl md:text-5xl tracking-tight">Less than Tinder. More than free.</h2>
+              <h2 className="font-serif text-4xl md:text-5xl tracking-tight">Premium that fits your wallet.</h2>
             </div>
-            <Link to="/app/plans" data-testid="see-all-plans" className="hidden md:inline-block text-sm smallcaps text-[var(--accent)] hover:text-[var(--primary)]">See full comparison →</Link>
+            <Link to="/app/plans" data-testid="see-all-plans" className="hidden md:inline-block text-sm smallcaps text-[var(--accent)] hover:text-[var(--primary)]">See full pricing →</Link>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: "Basic", price: "7.99", vs: "vs Tinder Plus $9.99", perks: ["Unlimited likes", "Rewind last swipe", "5 super likes / day"] },
-              { name: "Premium", price: "14.99", vs: "vs Tinder Gold $19.99", featured: true, perks: ["See who liked you", "Weekly boost", "Read receipts", "10 super likes / day"] },
-              { name: "Platinum", price: "24.99", vs: "vs Tinder Platinum $29.99", perks: ["Message before match", "Priority likes", "Daily boost", "Unlimited super likes"] },
-            ].map((p, i) => (
+              { name: "Basic", perks: ["Unlimited likes", "Rewind last swipe", "5 super likes / day"] },
+              { name: "Premium", featured: true, perks: ["See who liked you", "Weekly boost", "Read receipts", "10 super likes / day"] },
+              { name: "Platinum", perks: ["Message before match", "Priority likes", "Daily boost", "Unlimited super likes"] },
+            ].map((p) => (
               <div key={p.name} className={`surface p-8 ${p.featured ? "ring-1 ring-[var(--primary)]" : ""}`} data-testid={`plan-preview-${p.name.toLowerCase()}`}>
                 {p.featured && <span className="smallcaps text-[var(--primary)]">Most popular</span>}
                 <h3 className="font-serif text-3xl mt-2">{p.name}</h3>
-                <p className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-serif">${p.price}</span>
-                  <span className="text-sm text-[var(--muted)]">/mo</span>
-                </p>
-                <p className="text-xs text-[var(--muted)] mt-1">{p.vs}</p>
                 <ul className="mt-6 space-y-2 text-sm text-[var(--secondary-fg)]">
                   {p.perks.map(perk => <li key={perk}>— {perk}</li>)}
                 </ul>
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-[var(--muted)] mt-8">Or grab a <span className="text-[var(--accent)]">Swipe Pack — $0.99 for +10 swipes.</span></p>
+          <p className="text-center text-sm text-[var(--muted)] mt-8">Also available: <span className="text-[var(--accent)]">Pay-as-you-go Swipe Packs</span> when you just need a few more.</p>
         </div>
       </section>
 

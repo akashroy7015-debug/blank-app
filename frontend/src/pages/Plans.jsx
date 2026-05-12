@@ -50,7 +50,6 @@ export default function Plans() {
 
   const subs = data.plans.filter(p => p.kind === "subscription");
   const pack = data.plans.find(p => p.id === "swipe_pack");
-  const cmp = data.comparison;
   const meta = data.currency_meta;
   const fmt = (n) => formatMoney(n, currency, meta);
 
@@ -116,26 +115,13 @@ export default function Plans() {
           </div>
         )}
 
-        <div className="mt-16">
-          <p className="smallcaps text-[var(--muted)]">Comparison ({meta.code})</p>
-          <h2 className="font-serif text-3xl mt-2">How we stack up</h2>
-          <div className="surface mt-6 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="border-b border-[var(--border)]">
-                <tr className="text-left text-[var(--muted)]">
-                  <th className="p-4 smallcaps">Tier</th>
-                  <th className="p-4 smallcaps">Sparkd</th>
-                  <th className="p-4 smallcaps">Tinder</th>
-                  <th className="p-4 smallcaps">Bumble</th>
-                </tr>
-              </thead>
-              <tbody className="text-[var(--secondary-fg)]">
-                <tr className="border-b border-[var(--border)]"><td className="p-4">Entry</td><td className="p-4 text-[var(--primary)] font-serif">{fmt(subs[0]?.amount)}</td><td className="p-4">{fmt(cmp.tinder.plus)}</td><td className="p-4">—</td></tr>
-                <tr className="border-b border-[var(--border)]"><td className="p-4">Premium</td><td className="p-4 text-[var(--primary)] font-serif">{fmt(subs[1]?.amount)}</td><td className="p-4">{fmt(cmp.tinder.gold)}</td><td className="p-4">{fmt(cmp.bumble.premium)}</td></tr>
-                <tr><td className="p-4">Top tier</td><td className="p-4 text-[var(--primary)] font-serif">{fmt(subs[2]?.amount)}</td><td className="p-4">{fmt(cmp.tinder.platinum)}</td><td className="p-4">{fmt(cmp.bumble.premium_plus)}</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div className="mt-16 surface p-7">
+          <p className="smallcaps text-[var(--primary)]">Why Sparkd</p>
+          <h2 className="font-serif text-3xl mt-2">Built for real connection.</h2>
+          <p className="text-sm text-[var(--secondary-fg)] mt-4 max-w-2xl leading-relaxed">
+            Verified profiles, AI-assisted moderation, women-first safety tools, and clean monthly pricing —
+            no surprise fees, no hidden tiers. Cancel from your phone in two taps.
+          </p>
         </div>
 
         <p className="text-xs text-[var(--muted)] mt-10 max-w-2xl">
