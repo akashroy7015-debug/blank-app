@@ -1,54 +1,71 @@
-import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
+import AuthCallback from "@/pages/AuthCallback";
+import Onboarding from "@/pages/Onboarding";
+import Swipe from "@/pages/Swipe";
+import Matches from "@/pages/Matches";
+import Chat from "@/pages/Chat";
+import Profile from "@/pages/Profile";
+import Plans from "@/pages/Plans";
+import Billing from "@/pages/Billing";
+import Settings from "@/pages/Settings";
+import Safety from "@/pages/Safety";
+import Admin from "@/pages/Admin";
+import PaymentSuccess from "@/pages/PaymentSuccess";
+import Legal from "@/pages/Legal";
+import CookieBanner from "@/components/CookieBanner";
+import { useAuth } from "@/auth";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function Protected({ children, requireOnboarded = true }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen grid place-items-center text-[var(--muted)]">Loading…</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (requireOnboarded && !user.onboarded) return <Navigate to="/onboarding" replace />;
+  return children;
+}
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+function AdminOnly({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen grid place-items-center text-[var(--muted)]">Loading…</div>;
+  if (!user || user.role !== "admin") return <Navigate to="/app/swipe" replace />;
+  return children;
+}
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
+function AppRouter() {
+  const loc = useLocation();
+  if (loc.hash?.includes("session_id=")) return <AuthCallback />;
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/onboarding" element={<Protected requireOnboarded={false}><Onboarding /></Protected>} />
+      <Route path="/app/swipe" element={<Protected><Swipe /></Protected>} />
+      <Route path="/app/matches" element={<Protected><Matches /></Protected>} />
+      <Route path="/app/chat/:matchId" element={<Protected><Chat /></Protected>} />
+      <Route path="/app/profile" element={<Protected><Profile /></Protected>} />
+      <Route path="/app/plans" element={<Protected><Plans /></Protected>} />
+      <Route path="/app/billing" element={<Protected><Billing /></Protected>} />
+      <Route path="/app/settings" element={<Protected><Settings /></Protected>} />
+      <Route path="/app/safety" element={<Protected><Safety /></Protected>} />
+      <Route path="/app/admin" element={<AdminOnly><Admin /></AdminOnly>} />
+      <Route path="/payment/success" element={<Protected><PaymentSuccess /></Protected>} />
+      <Route path="/legal/:slug" element={<Legal />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-};
+}
 
-function App() {
+export default function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <AppRouter />
+        <CookieBanner />
       </BrowserRouter>
     </div>
   );
 }
-
-export default App;

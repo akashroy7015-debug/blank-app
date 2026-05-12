@@ -1,0 +1,50 @@
+{
+  "summary": "Comprehensive Sparkd backend testing: 39/40 tests passed (97.5%). All auth (register/login/OTP/me), profile, swipe (state/deck/action/402 limit/match), matches+chat (list/send/AI block/icebreaker), safety (report/block/settings), privacy (settings/export/cookie-consent/delete-account), plans, checkout session creation, AI moderation, and admin RBAC endpoints work correctly. One real bug found: /api/checkout/status/{session_id} returns 502 because the Emergent Stripe sandbox responds 404 'No such checkout.session' for sessions that were just created via the same gateway.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/checkout/status/{session_id}",
+        "issue": "Returns 502 'Payment status error'. Backend logs show Stripe sandbox (integrations.emergentagent.com/stripe/v1/checkout/sessions/<id>) responds 404 'resource_missing: No such checkout.session' for session IDs that were just successfully created via POST /api/checkout/session against the same gateway. The success_url, cancel_url and tx row are all correct (verified via /api/billing/history shows payment_status=initiated, amount=7.99). The bug is either (a) the emergent StripeCheckout test sandbox does not persist sessions for GET retrieval, or (b) the create call and status call need to share more than just the api key (e.g. same StripeCheckout instance, or webhook_url must match exactly — currently webhook_url derives from request.base_url which is identical in both endpoints so this shouldn't differ). Frontend success page polling will not work end-to-end until this is resolved.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Investigate /api/checkout/status/{session_id} 502 — Emergent Stripe sandbox returns 404 for freshly created session IDs. Try (a) passing session_id directly to StripeCheckout without re-instantiating, (b) verifying webhook_url is byte-identical between create and status calls, (c) check with Emergent integrations team whether the test sandbox persists checkout sessions across requests. Until fixed, the /payment/success page on the frontend cannot confirm payment via polling."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 1006 lines — should be split into modules (auth.py, swipes.py, matches.py, safety.py, privacy.py, checkout.py, admin.py, seed.py) per the >700 line rule",
+    "Subscription gating bug: in get_daily_swipe_state and consume_swipe, BASIC plan ($7.99) is treated as 'unlimited' alongside premium/platinum. The PACKAGES dict lists 'Unlimited likes' as a Basic perk so this is intentional, but if product wants 10 free for free users only and unlimited only for premium+, basic should NOT be in the unlimited tuple. Confirm product intent.",
+    "/api/safety/report does not validate target_user_id exists — any string would create a report and could shadow-ban a non-existent user; recommend a users.find_one check",
+    "/api/swipes/action does not validate target_user_id is a real, active, non-self user — could create orphan swipe records",
+    "/api/matches/{id}/icebreaker accepts a body (IcebreakerReq) but ignores it — uses match's other user. Either remove the request body or use it.",
+    "/api/auth/google/session uses data['session_token'] as the cookie token but never sets the Set-Cookie header on the response; frontend must manually pass it back. Document this or add response.set_cookie.",
+    "AI moderation rule-based fallback uses naive substring match ('bitch' in 'rabbitch' would false-positive) — use word boundaries",
+    "/api/privacy/delete-account uses $unset on photos, bio, etc., but later queries assume these fields exist (e.g., swipes/deck filters profile_visible) — should also flip profile_visible=False so deleted users disappear from deck immediately",
+    "/api/admin/users does not paginate beyond 200 results; add skip/limit params",
+    "No rate limiting on /api/auth/login or /api/auth/otp/request — abuse risk"
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {
+    "backend": "97.5%",
+    "frontend": "not tested (skipped per request)"
+  },
+  "test_credentials": "Admin: admin@sparkd.app / AdminSparkd2026! ; Demo: demo@sparkd.app / DemoSparkd2026! — both verified working via /api/auth/login",
+  "seed_data_creation": "Test suite creates ephemeral users with @example.com emails (prefixes: REG_, EXHAUST_, MATCHA_, MATCHB_, VIC_, REP_, DEL_, UNDER_, NOCONS_). None of these are cleaned up — Mongo may accumulate test users. Backend's startup seed_db() correctly creates admin, demo, and 12 demo profiles (Ava, Liam, Maya, Noah, Zara, Eli, Sienna, Kai, Iris, Theo, Luna, Nico).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "backend_test.py covers 40 tests across 11 classes. Use REACT_APP_BACKEND_URL from frontend/.env. Critical: Pydantic EmailStr rejects @sparkd.test and other reserved TLDs — always use @example.com for test emails. The only failing test is TestCheckout.test_checkout_status_polls due to Emergent Stripe sandbox returning 404 for fresh sessions — this is a real integration issue (502), not a test bug. POST /api/checkout/session works correctly and the payment_transactions row is created with payment_status=initiated (verified via /api/billing/history).",
+  "rca_of_the_issue": "Stripe status 502 RCA: 1) POST /api/checkout/session calls StripeCheckout.create_checkout_session() — returns 200 with valid session_id and url. 2) GET /api/checkout/status/{session_id} instantiates a NEW StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=f'{host_url}api/webhook/stripe') and calls get_checkout_status(session_id). 3) Backend logs show: 'Stripe API response path=https://integrations.emergentagent.com/stripe/v1/checkout/sessions/<id> response_code=404' with 'resource_missing: No such checkout.session'. 4) This persists even with a 3-second delay between create and status. 5) host_url (request.base_url) is consistent across both endpoints, so webhook_url should match. 6) Likely root cause: the Emergent stripe test sandbox at integrations.emergentagent.com does not persist test sessions for GET retrieval, OR sandbox requires identical-instance reuse, OR there is a different identifier mismatch happening. Repro: POST /api/checkout/session with basic_monthly -> 200 -> immediately GET /api/checkout/status/<returned session_id> with same JWT -> 502. Mitigation: contact emergent integrations team OR mock the status check in dev environment OR reuse the same StripeCheckout instance via a module-level singleton."
+}
