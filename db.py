@@ -108,12 +108,12 @@ def init_db():
             pass  # Column already exists — that's fine.
 
     # ── Seed admin account ────────────────────────────────────────────────────
-    c.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'")
-    if c.fetchone()[0] == 0:
-        c.execute(
-            "INSERT OR IGNORE INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
-            ("Admin", "admin@panditji.in", hash_password("Admin@123"), "1800000000", "admin"),
-        )
+    # Delete any existing admin so password change takes effect on redeploy
+    c.execute("DELETE FROM users WHERE email = 'admin@panditji.in'")
+    c.execute(
+        "INSERT OR IGNORE INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
+        ("Admin", "admin@panditji.in", hash_password("Panditji2024"), "1800000000", "admin"),
+    )
 
     # ── Seed sample pandits ───────────────────────────────────────────────────
     c.execute("SELECT COUNT(*) FROM pandits")
