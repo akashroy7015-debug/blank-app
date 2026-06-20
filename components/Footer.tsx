@@ -10,11 +10,11 @@ export default function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="text-2xl font-bold">
               <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                💋 RizzAI
+                ✨ FlirtIQ
               </span>
             </Link>
             <p className="text-gray-400 mt-3 text-sm max-w-xs">
-              Your AI-powered dating coach. Upload a chat screenshot and get perfect replies, compatibility scores, and expert strategy — powered by Gemini AI.
+              Write the perfect message. Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by Gemini AI.
             </p>
             <div className="flex items-center gap-4 mt-5">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-400 transition-colors">
@@ -66,7 +66,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:hello@rizzai.app" className="text-gray-400 hover:text-white transition-colors">
+                <a href="mailto:hello@flirtiq.app" className="text-gray-400 hover:text-white transition-colors">
                   Contact
                 </a>
               </li>
@@ -76,7 +76,7 @@ export default function Footer() {
 
         <div className="border-t border-white/8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} RizzAI. All rights reserved.
+            &copy; {new Date().getFullYear()} FlirtIQ. All rights reserved.
           </p>
           <p className="text-gray-500 text-sm flex items-center gap-1">
             Made with <Heart size={14} className="text-pink-500" /> for romantics everywhere

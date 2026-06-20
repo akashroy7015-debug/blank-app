@@ -1,32 +1,38 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Sparkles, Heart, Zap, Star } from 'lucide-react'
+import { ArrowRight, Heart, Zap, Star } from 'lucide-react'
 import { useLanguage } from '@/lib/language'
 
 const translations = {
   en: {
-    badge: 'Powered by Gemini AI',
-    heading1: 'Your AI',
-    heading2: 'Dating Coach',
-    subheading: 'Upload a chat screenshot — get 4 perfect replies, a compatibility score, and expert dating strategy. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.',
-    cta: 'Try It Free',
-    secondaryCta: 'See Pricing',
-    stat1: { value: '10K+', label: 'Analyses Done' },
-    stat2: { value: 'All Apps', label: 'Supported' },
-    stat3: { value: 'Free', label: 'To Start' },
+    counter: 'people writing smarter right now',
+    heading1: 'You matched.',
+    heading2: 'Now what?',
+    subheading: 'Upload your chat screenshot — FlirtIQ reads the tone, gives you 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.',
+    cta: 'Try It Free →',
+    secondaryCta: 'See how it works',
+    stats: [
+      { value: '10M+', label: 'Replies Generated' },
+      { value: '4', label: 'Reply Styles' },
+      { value: 'Free', label: 'to Start' },
+      { value: '★4.8', label: 'Rating' },
+    ],
     compatLabel: 'Compatibility Score',
   },
   hi: {
-    badge: 'Gemini AI se Powered',
-    heading1: 'Tumhara AI',
-    heading2: 'Dating Coach',
-    subheading: 'Screenshot daalo, perfect reply pao. Tinder, Bumble, Hinge, TrulyMadly, Aisle, Instagram DMs — sab pe kaam karta hai.',
-    cta: 'Free Mein Try Karo',
-    secondaryCta: 'Pricing Dekho',
-    stat1: { value: '10K+', label: 'Analyses Ho Chuke' },
-    stat2: { value: 'Sab Apps', label: 'Pe Kaam Kare' },
-    stat3: { value: 'Free', label: 'Mein Shuru' },
+    counter: 'log abhi smarter messages likh rahe hain',
+    heading1: 'Match ho gaya.',
+    heading2: 'Ab kya?',
+    subheading: 'Screenshot daalo — FlirtIQ tone padhega, 4 perfect replies dega aur compatibility score batayega. Tinder, Bumble, Hinge, TrulyMadly, Aisle, Insta sab pe kaam karta hai.',
+    cta: 'Free Mein Try Karo →',
+    secondaryCta: 'Kaise kaam karta hai',
+    stats: [
+      { value: '10M+', label: 'Replies Bane' },
+      { value: '4', label: 'Reply Styles' },
+      { value: 'Free', label: 'Mein Shuru' },
+      { value: '★4.8', label: 'Rating' },
+    ],
     compatLabel: 'Compatibility Score',
   },
 }
@@ -43,21 +49,15 @@ export default function Hero() {
 
       <div className="relative max-w-7xl mx-auto text-center">
         {/* Live counter */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
           </span>
           <p className="text-gray-400 text-sm">
             <span className="text-white font-semibold">17,130</span>{' '}
-            {lang === 'hi' ? 'log abhi smarter messages likh rahe hain' : 'people writing smarter messages right now'}
+            {text.counter}
           </p>
-        </div>
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-2 text-pink-400 text-sm font-medium mb-8">
-          <Sparkles size={14} />
-          {text.badge}
         </div>
 
         {/* Headline */}
@@ -66,7 +66,7 @@ export default function Hero() {
             {text.heading1}
           </span>
           <br />
-          {text.heading2}
+          <span className="text-white">{text.heading2}</span>
         </h1>
 
         {/* Subheading */}
@@ -75,38 +75,33 @@ export default function Hero() {
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
           <Link
             href="/dashboard"
-            className="group bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-xl px-8 py-4 text-lg transition-all glow-pink flex items-center gap-2"
+            className="group bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold rounded-xl px-8 py-4 text-lg transition-all shadow-lg shadow-pink-500/25 flex items-center gap-2"
           >
             {text.cta}
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
-            href="/pricing"
+            href="/#features"
             className="text-gray-300 hover:text-white font-semibold border border-white/10 hover:border-white/20 rounded-xl px-8 py-4 text-lg transition-all"
           >
             {text.secondaryCta}
           </Link>
         </div>
 
-        {/* Stats */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 md:gap-16 mb-20">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white mb-1">{text.stat1.value}</div>
-            <div className="text-gray-500 text-sm">{text.stat1.label}</div>
-          </div>
-          <div className="hidden sm:block w-px h-12 bg-white/10" />
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white mb-1">{text.stat2.value}</div>
-            <div className="text-gray-500 text-sm">{text.stat2.label}</div>
-          </div>
-          <div className="hidden sm:block w-px h-12 bg-white/10" />
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white mb-1">{text.stat3.value}</div>
-            <div className="text-gray-500 text-sm">{text.stat3.label}</div>
-          </div>
+        {/* Stats row */}
+        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 mb-20">
+          {text.stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3">
+              {i > 0 && <div className="hidden sm:block w-px h-8 bg-white/10" />}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-gray-500 text-xs mt-0.5">{stat.label}</div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Mock UI — decorative reply card preview */}

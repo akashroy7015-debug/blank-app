@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 
 // Prices in cents (USD × 100): $4.99 = 499, $9.99 = 999, $39.99 = 3999
 const PLANS: Record<string, { price: number; interval: 'week' | 'month' | 'year'; name: string }> = {
-  weekly: { price: 499,  interval: 'week',  name: 'RizzAI Weekly' },
-  monthly: { price: 999,  interval: 'month', name: 'RizzAI Monthly' },
-  yearly: { price: 3999, interval: 'year',  name: 'RizzAI Yearly' },
+  weekly: { price: 499,  interval: 'week',  name: 'FlirtIQ Weekly' },
+  monthly: { price: 999,  interval: 'month', name: 'FlirtIQ Monthly' },
+  yearly: { price: 3999, interval: 'year',  name: 'FlirtIQ Yearly' },
 }
 
 export async function POST(req: Request) {

@@ -87,7 +87,7 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold">
             <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              💋 RizzAI
+              ✨ FlirtIQ
             </span>
           </Link>
           <h1 className="text-2xl font-bold mt-4 mb-2">Create your account</h1>

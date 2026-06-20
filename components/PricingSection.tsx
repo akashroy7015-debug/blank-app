@@ -16,7 +16,7 @@ const copy = {
   hi: {
     badge: 'Pricing',
     heading: 'Seedhi, Saaf Pricing',
-    sub: 'Free mein shuru karo. Koi hidden fees nahi.',
+    sub: 'Free mein shuru karo. Jab date pakki ho jaye, tab upgrade karna. Koi hidden fees nahi, koi lock-in nahi.',
     popular: 'POPULAR',
     bestValue: 'BEST VALUE',
     loading: 'Loading...',

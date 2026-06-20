@@ -6,15 +6,15 @@ export default function Story() {
   const { lang } = useLanguage()
 
   const en = {
-    label: 'Why RizzAI exists',
-    heading: 'A message\'s RizzAI journey.',
+    label: 'Why FlirtIQ exists',
+    heading: 'A message\'s FlirtIQ journey.',
     body: [
-      'People match — but after the first message, the conversation can freeze. RizzAI was built to solve that gap with AI: finding the right tone, replying more intelligently, and making digital connection less stressful.',
-      'The problem is usually not lack of interest. It\'s writing too much at the wrong time, staying too short, missing the tone, or not reading the other person\'s intent. RizzAI analyzes the context inside your screenshot, reads the energy of the conversation, and offers reply options that aren\'t stuck in a single template.',
+      'People match — but after the first message, the conversation can freeze. FlirtIQ was built to solve that gap with AI: finding the right tone, replying more intelligently, and making digital connection less stressful.',
+      'The problem is usually not lack of interest. It\'s writing too much at the wrong time, staying too short, missing the tone, or not reading the other person\'s intent. FlirtIQ analyzes the context inside your screenshot, reads the energy of the conversation, and offers reply options that aren\'t stuck in a single template.',
       'The result feels less like a generic AI line and closer to your own voice: clearer, more confident, and more natural.',
     ],
     steps: [
-      { emoji: '📸', step: 'Step 1', desc: 'Upload a screenshot. RizzAI reads the chat and catches the context.' },
+      { emoji: '📸', step: 'Step 1', desc: 'Upload a screenshot. FlirtIQ reads the chat and catches the context.' },
       { emoji: '🧠', step: 'Step 2', desc: 'AI analyzes it. Tone, intent, energy, and compatibility score come together.' },
       { emoji: '🎭', step: 'Step 3', desc: 'Choose your style. Pick from Flirty, Confident, Funny, or Sweet replies.' },
       { emoji: '🚀', step: 'Send it', desc: 'Copy and send. Let your message sound clearer, more natural, more like you.' },
@@ -22,15 +22,15 @@ export default function Story() {
   }
 
   const hi = {
-    label: 'RizzAI kyun bana?',
-    heading: 'Ek message ka RizzAI safar.',
+    label: 'FlirtIQ kyun bana?',
+    heading: 'Ek message ka FlirtIQ safar.',
     body: [
-      'Log match karte hain — lekin pehle message ke baad conversation freeze ho jaati hai. RizzAI usi gap ko solve karne ke liye bana: sahi tone dhundhne ke liye, smarter replies ke liye, aur digital connection ko less stressful banane ke liye.',
-      'Problem aksar interest ki kami nahi hoti. Galat waqt par zyada likhna, bahut chhota rehna, tone miss karna, ya doosre ki intent na samajhna — yahi hota hai. RizzAI tumhare screenshot ka context analyze karta hai, conversation ki energy padhta hai, aur aisi replies deta hai jo generic template se alag feel hoti hain.',
+      'Log match karte hain — lekin pehle message ke baad conversation freeze ho jaati hai. FlirtIQ usi gap ko solve karne ke liye bana: sahi tone dhundhne ke liye, smarter replies ke liye, aur digital connection ko less stressful banane ke liye.',
+      'Problem aksar interest ki kami nahi hoti. Galat waqt par zyada likhna, bahut chhota rehna, tone miss karna, ya doosre ki intent na samajhna — yahi hota hai. FlirtIQ tumhare screenshot ka context analyze karta hai, conversation ki energy padhta hai, aur aisi replies deta hai jo generic template se alag feel hoti hain.',
       'Result tumhari apni awaaz jaisi lagti hai: clearer, more confident, aur more natural.',
     ],
     steps: [
-      { emoji: '📸', step: 'Step 1', desc: 'Screenshot upload karo. RizzAI chat padhta hai aur context pakadta hai.' },
+      { emoji: '📸', step: 'Step 1', desc: 'Screenshot upload karo. FlirtIQ chat padhta hai aur context pakadta hai.' },
       { emoji: '🧠', step: 'Step 2', desc: 'AI analyze karta hai. Tone, intent, energy, aur compatibility score ek saath.' },
       { emoji: '🎭', step: 'Step 3', desc: 'Apna style chuno. Flirty, Confident, Funny, ya Sweet — jo sahi lage.' },
       { emoji: '🚀', step: 'Bhejo', desc: 'Copy karo aur bhejo. Tumhara message clearer, natural, aur tumhare jaisa lagega.' },

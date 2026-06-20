@@ -1,5 +1,5 @@
 // Free tier usage tracking via localStorage
-const KEY = 'rizzai_usage'
+const KEY = 'flirtiq_usage'
 
 interface UsageData {
   date: string  // YYYY-MM-DD

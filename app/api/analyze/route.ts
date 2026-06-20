@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `You are RizzAI — an expert AI dating coach for users worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
+    const prompt = `You are FlirtIQ — an expert AI dating coach for users worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
 {
   "replies": {
     "flirty": "A playful, flirty reply that creates tension (under 100 chars)",

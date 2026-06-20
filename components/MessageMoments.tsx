@@ -17,8 +17,8 @@ export default function MessageMoments() {
 
   const heading = lang === 'hi' ? 'Sabse common chat situations' : 'Most common message moments'
   const sub     = lang === 'hi'
-    ? 'Apni situation choose karo — RizzAI perfect reply dega'
-    : 'Pick your situation — RizzAI knows exactly what to say'
+    ? 'Apni situation choose karo — FlirtIQ perfect reply dega'
+    : 'Pick your situation — FlirtIQ knows exactly what to say'
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-transparent to-white/[0.02]">

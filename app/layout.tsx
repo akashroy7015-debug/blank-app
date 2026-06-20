@@ -8,8 +8,8 @@ import { LanguageProvider } from '@/lib/language'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "RizzAI — India's AI Flirting Coach",
-  description: "India's #1 AI flirting coach. Screenshot daalo, perfect reply pao. Works on Bumble, Tinder, TrulyMadly, Aisle, Instagram DMs — powered by Gemini AI.",
+  title: "FlirtIQ — Write the perfect message.",
+  description: "Upload your chat screenshot — FlirtIQ reads the tone, gives you 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.",
 }
 
 export default function RootLayout({

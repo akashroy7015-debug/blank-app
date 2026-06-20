@@ -18,7 +18,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('en')
 
   useEffect(() => {
-    const stored = localStorage.getItem('rizzai_lang') as Lang | null
+    const stored = localStorage.getItem('flirtiq_lang') as Lang | null
     if (stored === 'en' || stored === 'hi') {
       setLangState(stored)
     }
@@ -26,7 +26,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = (newLang: Lang) => {
     setLangState(newLang)
-    localStorage.setItem('rizzai_lang', newLang)
+    localStorage.setItem('flirtiq_lang', newLang)
   }
 
   return (
