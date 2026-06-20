@@ -1,458 +1,317 @@
-"""
-db.py — Database layer for PanditJi app.
-All SQLite operations are here. Each function does one clear thing.
-"""
-
 import sqlite3
 import hashlib
-import base64
+import os
 
-DB_PATH = "pandit_booking.db"
+DB_PATH = os.environ.get("DB_PATH", "matrimony.db")
 
-
-# ── connection ─────────────────────────────────────────────────────────────────
 
 def get_conn():
-    """Open a SQLite connection. row_factory lets us access columns by name."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-def hash_password(password):
-    """One-way hash for storing passwords. Never store plain text passwords."""
-    return hashlib.sha256(password.encode()).hexdigest()
+def hash_password(pw: str) -> str:
+    return hashlib.sha256(pw.encode()).hexdigest()
 
-
-# ── setup ──────────────────────────────────────────────────────────────────────
 
 def init_db():
-    """
-    Create all tables if they don't exist yet, run any migrations needed
-    for existing databases, and seed sample data on first run.
-    """
     conn = get_conn()
+    c = conn.cursor()
 
-    conn.executescript("""
-        -- Users: devotees, pandits, and admins all share this table.
-        -- The 'role' column says what kind of user they are.
+    c.executescript("""
         CREATE TABLE IF NOT EXISTS users (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             name          TEXT    NOT NULL,
-            email         TEXT    UNIQUE NOT NULL,
+            email         TEXT    NOT NULL UNIQUE,
             password_hash TEXT    NOT NULL,
             phone         TEXT,
-            role          TEXT    DEFAULT 'user',   -- 'user', 'pandit', 'admin'
-            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            role          TEXT    NOT NULL DEFAULT 'user',
+            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
-        -- Pandits: professional details for each priest.
-        -- status: 'pending' (waiting for admin), 'approved' (live), 'rejected', 'deactivated'
-        CREATE TABLE IF NOT EXISTS pandits (
-            id               INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id          INTEGER,               -- linked user account (if self-registered)
-            name             TEXT    NOT NULL,
-            specialization   TEXT,
-            experience_years INTEGER,
-            languages        TEXT,
-            location         TEXT,
-            rating           REAL    DEFAULT 4.5,
-            bio              TEXT,
-            price_per_puja   INTEGER DEFAULT 1100,
-            available        INTEGER DEFAULT 1,     -- 1 = available, 0 = not available
-            status           TEXT    DEFAULT 'approved',
-            photo            TEXT,                  -- base64-encoded image string
-            FOREIGN KEY (user_id) REFERENCES users(id)
+        CREATE TABLE IF NOT EXISTS profiles (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id         INTEGER NOT NULL UNIQUE REFERENCES users(id),
+            gender          TEXT,
+            dob             TEXT,
+            height_cm       INTEGER,
+            religion        TEXT,
+            caste           TEXT,
+            mother_tongue   TEXT,
+            education       TEXT,
+            profession      TEXT,
+            annual_income   TEXT,
+            city            TEXT,
+            state           TEXT,
+            diet            TEXT,
+            smoke           TEXT,
+            drink           TEXT,
+            mangalik        TEXT,
+            family_type     TEXT,
+            family_values   TEXT,
+            about_me        TEXT,
+            photo_base64    TEXT,
+            status          TEXT    NOT NULL DEFAULT 'pending',
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
-        -- Puja types: the list of pujas users can book.
-        CREATE TABLE IF NOT EXISTS puja_types (
-            id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            name           TEXT    NOT NULL,
-            description    TEXT,
-            duration_hours REAL    DEFAULT 2.0,
-            category       TEXT
-        );
-
-        -- Bookings: one row per booking a devotee makes.
-        CREATE TABLE IF NOT EXISTS bookings (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id       INTEGER NOT NULL,
-            pandit_id     INTEGER NOT NULL,
-            puja_type_id  INTEGER NOT NULL,
-            booking_date  TEXT    NOT NULL,
-            time_slot     TEXT    NOT NULL,
-            address       TEXT    NOT NULL,
-            special_notes TEXT,
-            status        TEXT    DEFAULT 'confirmed',  -- 'confirmed', 'cancelled'
-            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id)      REFERENCES users(id),
-            FOREIGN KEY (pandit_id)    REFERENCES pandits(id),
-            FOREIGN KEY (puja_type_id) REFERENCES puja_types(id)
+        CREATE TABLE IF NOT EXISTS interests (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender_id   INTEGER NOT NULL REFERENCES users(id),
+            receiver_id INTEGER NOT NULL REFERENCES users(id),
+            status      TEXT    NOT NULL DEFAULT 'pending',
+            created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(sender_id, receiver_id)
         );
     """)
 
-    c = conn.cursor()
-
-    # ── Migrations: safely add new columns to existing databases ──────────────
-    # SQLite does not support IF NOT EXISTS for ALTER TABLE, so we catch errors.
-    for sql in [
-        "ALTER TABLE users   ADD COLUMN role TEXT DEFAULT 'user'",
-        "ALTER TABLE pandits ADD COLUMN user_id INTEGER",
-        "ALTER TABLE pandits ADD COLUMN status TEXT DEFAULT 'approved'",
-        "ALTER TABLE pandits ADD COLUMN photo  TEXT",
-    ]:
-        try:
-            c.execute(sql)
-        except Exception:
-            pass  # Column already exists — that's fine.
-
-    # ── Seed admin account ────────────────────────────────────────────────────
-    # Delete any existing admin so password change takes effect on redeploy
-    c.execute("DELETE FROM users WHERE email = 'admin@panditji.in'")
+    # Seed admin — always refresh so password changes take effect
+    c.execute("DELETE FROM users WHERE email = 'admin@matrimony.in'")
     c.execute(
-        "INSERT OR IGNORE INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
-        ("Admin", "admin@panditji.in", hash_password("Panditji2024"), "1800000000", "admin"),
+        "INSERT INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
+        ("Admin", "admin@matrimony.in", hash_password("Admin2024"), "1800000000", "admin"),
     )
-
-    # ── Seed sample pandits ───────────────────────────────────────────────────
-    c.execute("SELECT COUNT(*) FROM pandits")
-    if c.fetchone()[0] == 0:
-        pandits = [
-            ("Pt. Ramesh Sharma",  "Vedic Rituals & Havan",        15, "Hindi, Sanskrit",
-             "Delhi",     4.8, "Experienced Vedic priest specialising in Havan, Satyanarayan Katha, and Griha Pravesh with authentic Vedic mantras.", 1100),
-            ("Pt. Suresh Mishra",  "Marriage & Samskaras",          22, "Hindi, Sanskrit, Bengali",
-             "Mumbai",    4.9, "Expert in all 16 Hindu Samskaras — Vivah, Namkaran, Mundan, and Annaprashan — with 22 years of ceremonial experience.", 1500),
-            ("Pt. Anil Tiwari",    "Katha & Path",                  12, "Hindi, Sanskrit",
-             "Lucknow",   4.7, "Specialist in Sundarkand Path, Ramayan Path, Bhagwat Katha, and Shiv Mahapuran recitations.", 900),
-            ("Pt. Vijay Shastri",  "Vastu & Griha Pravesh",         18, "Hindi, Sanskrit, Gujarati",
-             "Ahmedabad", 4.6, "Expert in Vastu Shanti, Griha Pravesh, and Bhoomi Pujan with deep knowledge of Vastu Shastra.", 1300),
-            ("Pt. Deepak Pandey",  "Navgraha & Jyotish Remedies",   10, "Hindi, Sanskrit",
-             "Varanasi",  4.8, "Specialist in Navgraha Shanti, Rudrabhishek, and astrological remedial pujas.", 1200),
-            ("Pt. Mohan Das",      "Antim Sanskar & Pitru Karma",   25, "Hindi, Sanskrit",
-             "Prayagraj", 4.9, "Expert in Antim Sanskar, Shradh, Pitru Tarpan, and all post-death rituals.", 2000),
-        ]
-        c.executemany(
-            """INSERT INTO pandits
-               (name, specialization, experience_years, languages, location, rating, bio, price_per_puja, status)
-               VALUES (?,?,?,?,?,?,?,?,'approved')""",
-            pandits,
-        )
-
-    # ── Seed puja types ───────────────────────────────────────────────────────
-    c.execute("SELECT COUNT(*) FROM puja_types")
-    if c.fetchone()[0] == 0:
-        puja_types = [
-            ("Satyanarayan Katha",   "Complete Satyanarayan Vrat Katha with Prasad",          3.0, "Katha"),
-            ("Bhagwat Katha",        "Srimad Bhagwat Katha recitation",                       3.0, "Katha"),
-            ("Sundarkand Path",      "Recitation of Sundarkand from Ramcharitmanas",           3.0, "Path"),
-            ("Ramayan Path",         "Complete Ramayan Paath",                                 8.0, "Path"),
-            ("Griha Pravesh Puja",   "House warming ceremony with Vastu Puja and Havan",       2.5, "Ceremony"),
-            ("Bhoomi Puja",          "Ground breaking ceremony before construction",            2.0, "Ceremony"),
-            ("Ganesh Puja",          "Ganesh Sthapana and Puja for auspicious beginnings",     1.5, "Puja"),
-            ("Lakshmi Puja",         "Devi Lakshmi Puja for wealth and prosperity",            2.0, "Puja"),
-            ("Navratri Puja",        "Nine nights Devi puja with all rituals",                 2.0, "Puja"),
-            ("Rudrabhishek",         "Abhishek of Lord Shiva with Panchamrit offerings",       2.5, "Puja"),
-            ("Navgraha Shanti",      "Puja for all nine planets to remove doshas",             3.0, "Shanti"),
-            ("Vastu Shanti",         "Purification and peace of dwelling space",               2.5, "Shanti"),
-            ("Vivah (Marriage)",     "Complete Hindu marriage ceremony with all rituals",       5.0, "Samskara"),
-            ("Namkaran Sanskar",     "Baby naming ceremony as per Vedic tradition",            1.5, "Samskara"),
-            ("Mundan Ceremony",      "First hair cutting ceremony for child",                  1.5, "Samskara"),
-            ("Annaprashan",          "First solid food ceremony for infant",                   1.5, "Samskara"),
-            ("Shradh / Pitru Tarpan","Ancestral rites and water offerings for departed souls", 2.0, "Pitru"),
-            ("Other / Custom Puja",  "Any other puja or special ritual as per your need",      2.0, "Other"),
-        ]
-        c.executemany(
-            "INSERT INTO puja_types (name, description, duration_hours, category) VALUES (?,?,?,?)",
-            puja_types,
-        )
-
     conn.commit()
     conn.close()
 
 
-# ── user auth ──────────────────────────────────────────────────────────────────
+# ── Auth ──────────────────────────────────────────────────────────────────────
 
-def create_user(name, email, password, phone, role="user"):
-    """Register a new devotee (or admin) account."""
+def register_user(name, email, password, phone):
     conn = get_conn()
     try:
         conn.execute(
-            "INSERT INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
-            (name, email, hash_password(password), phone, role),
+            "INSERT INTO users (name, email, password_hash, phone) VALUES (?,?,?,?)",
+            (name, email, hash_password(password), phone),
         )
         conn.commit()
-        return True, "ok_registered"
-    except Exception:
-        return False, "err_email_taken"
+        user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+        return dict(user), None
+    except sqlite3.IntegrityError:
+        return None, "email_exists"
     finally:
         conn.close()
 
 
-def create_pandit_user(name, email, phone, password, specialization,
-                       experience_years, languages, location, bio,
-                       price_per_puja, photo_b64=None):
-    """
-    Register a new Pandit: creates a user account (role='pandit')
-    AND a pandit profile (status='pending') in one transaction.
-    Admin must approve before the pandit goes live.
-    """
+def login_user(email, password):
     conn = get_conn()
-    try:
-        c = conn.cursor()
-        c.execute(
-            "INSERT INTO users (name, email, password_hash, phone, role) VALUES (?,?,?,?,?)",
-            (name, email, hash_password(password), phone, "pandit"),
-        )
-        user_id = c.lastrowid
-        c.execute(
-            """INSERT INTO pandits
-               (user_id, name, specialization, experience_years, languages,
-                location, bio, price_per_puja, photo, status)
-               VALUES (?,?,?,?,?,?,?,?,?,'pending')""",
-            (user_id, name, specialization, experience_years, languages,
-             location, bio, price_per_puja, photo_b64),
-        )
-        conn.commit()
-        return True, "pending_message"
-    except Exception:
-        conn.rollback()
-        return False, "err_email_taken"
-    finally:
-        conn.close()
-
-
-def get_user_by_email(email, password):
-    """Check email + password and return the user row, or None if wrong."""
-    conn = get_conn()
-    row = conn.execute(
-        "SELECT * FROM users WHERE email = ? AND password_hash = ?",
+    user = conn.execute(
+        "SELECT * FROM users WHERE email=? AND password_hash=?",
         (email, hash_password(password)),
     ).fetchone()
     conn.close()
-    return dict(row) if row else None
+    return dict(user) if user else None
 
 
-# ── public pandit queries ──────────────────────────────────────────────────────
-
-def get_all_pandits(search="", specialization=""):
-    """
-    Return only APPROVED pandits for the public listing.
-    Optionally filter by a search term (name / city / languages).
-    """
+def get_user(user_id):
     conn = get_conn()
-    query = "SELECT * FROM pandits WHERE available = 1 AND status = 'approved'"
-    params = []
-    if search:
-        query += " AND (name LIKE ? OR specialization LIKE ? OR location LIKE ? OR languages LIKE ?)"
-        params.extend([f"%{search}%"] * 4)
-    if specialization:
-        query += " AND specialization LIKE ?"
-        params.append(f"%{specialization}%")
+    u = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    conn.close()
+    return dict(u) if u else None
+
+
+# ── Profiles ──────────────────────────────────────────────────────────────────
+
+def upsert_profile(user_id, data: dict):
+    conn = get_conn()
+    existing = conn.execute("SELECT id FROM profiles WHERE user_id=?", (user_id,)).fetchone()
+    fields = [
+        "gender", "dob", "height_cm", "religion", "caste", "mother_tongue",
+        "education", "profession", "annual_income", "city", "state",
+        "diet", "smoke", "drink", "mangalik", "family_type", "family_values",
+        "about_me", "photo_base64",
+    ]
+    if existing:
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data] + [user_id]
+        conn.execute(f"UPDATE profiles SET {sets}, status='pending' WHERE user_id=?", vals)
+    else:
+        cols = ["user_id"] + [f for f in fields if f in data]
+        placeholders = ",".join("?" * len(cols))
+        vals = [user_id] + [data[f] for f in fields if f in data]
+        conn.execute(f"INSERT INTO profiles ({','.join(cols)}) VALUES ({placeholders})", vals)
+    conn.commit()
+    conn.close()
+
+
+def get_profile(user_id):
+    conn = get_conn()
+    p = conn.execute(
+        """SELECT p.*, u.name, u.email, u.phone
+           FROM profiles p JOIN users u ON u.id=p.user_id
+           WHERE p.user_id=?""",
+        (user_id,),
+    ).fetchone()
+    conn.close()
+    return dict(p) if p else None
+
+
+def browse_profiles(current_user_id, filters: dict):
+    conn = get_conn()
+    query = """
+        SELECT p.*, u.name, u.email
+        FROM profiles p JOIN users u ON u.id=p.user_id
+        WHERE p.status='approved'
+        AND p.user_id != ?
+    """
+    params = [current_user_id]
+
+    if filters.get("gender"):
+        query += " AND p.gender=?"
+        params.append(filters["gender"])
+    if filters.get("religion") and filters["religion"] != "Any":
+        query += " AND p.religion=?"
+        params.append(filters["religion"])
+    if filters.get("min_age") and filters.get("max_age"):
+        query += " AND CAST((strftime('%Y','now') - strftime('%Y', p.dob)) AS INTEGER) BETWEEN ? AND ?"
+        params += [int(filters["min_age"]), int(filters["max_age"])]
+    if filters.get("state") and filters["state"] != "Any":
+        query += " AND p.state=?"
+        params.append(filters["state"])
+    if filters.get("education") and filters["education"] != "Any":
+        query += " AND p.education=?"
+        params.append(filters["education"])
+
+    query += " ORDER BY p.created_at DESC"
     rows = conn.execute(query, params).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
 
-def get_pandit_by_id(pandit_id):
-    conn = get_conn()
-    row = conn.execute("SELECT * FROM pandits WHERE id = ?", (pandit_id,)).fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-
-def get_pandit_by_user_id(user_id):
-    """Find the pandit profile that belongs to a given user account."""
-    conn = get_conn()
-    row = conn.execute("SELECT * FROM pandits WHERE user_id = ?", (user_id,)).fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-
-def get_puja_types():
-    conn = get_conn()
-    rows = conn.execute("SELECT * FROM puja_types ORDER BY category, name").fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
-# ── booking ────────────────────────────────────────────────────────────────────
-
-def get_booked_slots(pandit_id, booking_date):
-    """Return the list of already-booked time slots for a pandit on a given date."""
+def all_profiles_admin():
     conn = get_conn()
     rows = conn.execute(
-        "SELECT time_slot FROM bookings WHERE pandit_id=? AND booking_date=? AND status!='cancelled'",
-        (pandit_id, booking_date),
-    ).fetchall()
-    conn.close()
-    return [r["time_slot"] for r in rows]
-
-
-def create_booking(user_id, pandit_id, puja_type_id, booking_date,
-                   time_slot, address, notes=""):
-    conn = get_conn()
-    conn.execute(
-        """INSERT INTO bookings
-           (user_id, pandit_id, puja_type_id, booking_date, time_slot, address, special_notes)
-           VALUES (?,?,?,?,?,?,?)""",
-        (user_id, pandit_id, puja_type_id, booking_date, time_slot, address, notes),
-    )
-    conn.commit()
-    conn.close()
-
-
-def get_user_bookings(user_id):
-    """All bookings made by a devotee, newest first."""
-    conn = get_conn()
-    rows = conn.execute("""
-        SELECT b.*, p.name AS pandit_name, p.specialization, p.price_per_puja,
-               pt.name AS puja_name, pt.duration_hours, pt.category
-        FROM bookings b
-        JOIN pandits    p  ON b.pandit_id    = p.id
-        JOIN puja_types pt ON b.puja_type_id = pt.id
-        WHERE b.user_id = ?
-        ORDER BY b.booking_date DESC, b.time_slot
-    """, (user_id,)).fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
-def cancel_booking(booking_id, user_id):
-    """A devotee cancels their own booking."""
-    conn = get_conn()
-    conn.execute(
-        "UPDATE bookings SET status='cancelled' WHERE id=? AND user_id=?",
-        (booking_id, user_id),
-    )
-    conn.commit()
-    conn.close()
-
-
-def get_pandit_bookings(pandit_id):
-    """All bookings assigned to a specific pandit — for the pandit's dashboard."""
-    conn = get_conn()
-    rows = conn.execute("""
-        SELECT b.*, u.name AS devotee_name, u.phone AS devotee_phone,
-               pt.name AS puja_name, pt.duration_hours, pt.category
-        FROM bookings b
-        JOIN users      u  ON b.user_id      = u.id
-        JOIN puja_types pt ON b.puja_type_id = pt.id
-        WHERE b.pandit_id = ?
-        ORDER BY b.booking_date DESC, b.time_slot
-    """, (pandit_id,)).fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
-# ── admin ──────────────────────────────────────────────────────────────────────
-
-def get_all_pandits_admin():
-    """All pandits regardless of status — used in the admin panel."""
-    conn = get_conn()
-    rows = conn.execute("SELECT * FROM pandits ORDER BY status, name").fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
-def get_all_users():
-    """All user accounts (does not return password hashes)."""
-    conn = get_conn()
-    rows = conn.execute(
-        "SELECT id, name, email, phone, role, created_at FROM users ORDER BY created_at DESC"
+        "SELECT p.*, u.name, u.email FROM profiles p JOIN users u ON u.id=p.user_id ORDER BY p.created_at DESC"
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
 
-def get_all_bookings_admin():
-    """All bookings with full details — for the admin bookings tab."""
+def approve_profile(user_id, action):
     conn = get_conn()
-    rows = conn.execute("""
-        SELECT b.*, u.name AS devotee_name, u.phone AS devotee_phone,
-               p.name AS pandit_name, pt.name AS puja_name, pt.category
-        FROM bookings b
-        JOIN users      u  ON b.user_id      = u.id
-        JOIN pandits    p  ON b.pandit_id    = p.id
-        JOIN puja_types pt ON b.puja_type_id = pt.id
-        ORDER BY b.booking_date DESC, b.created_at DESC
-    """).fetchall()
+    conn.execute("UPDATE profiles SET status=? WHERE user_id=?", (action, user_id))
+    conn.commit()
+    conn.close()
+
+
+def delete_user(user_id):
+    conn = get_conn()
+    conn.execute("DELETE FROM interests WHERE sender_id=? OR receiver_id=?", (user_id, user_id))
+    conn.execute("DELETE FROM profiles WHERE user_id=?", (user_id,))
+    conn.execute("DELETE FROM users WHERE id=? AND role != 'admin'", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+# ── Interests ─────────────────────────────────────────────────────────────────
+
+def send_interest(sender_id, receiver_id):
+    conn = get_conn()
+    try:
+        conn.execute(
+            "INSERT INTO interests (sender_id, receiver_id) VALUES (?,?)",
+            (sender_id, receiver_id),
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+
+def respond_interest(interest_id, action):
+    conn = get_conn()
+    conn.execute("UPDATE interests SET status=? WHERE id=?", (action, interest_id))
+    conn.commit()
+    conn.close()
+
+
+def get_interests_received(user_id):
+    conn = get_conn()
+    rows = conn.execute(
+        """SELECT i.*, u.name AS sender_name, p.city, p.state, p.profession,
+                  p.photo_base64, p.dob, p.religion
+           FROM interests i
+           JOIN users u ON u.id=i.sender_id
+           LEFT JOIN profiles p ON p.user_id=i.sender_id
+           WHERE i.receiver_id=? ORDER BY i.created_at DESC""",
+        (user_id,),
+    ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
 
-def update_pandit_status(pandit_id, status):
-    """Change a pandit's status: pending → approved / rejected / deactivated."""
+def get_interests_sent(user_id):
     conn = get_conn()
-    conn.execute("UPDATE pandits SET status=? WHERE id=?", (status, pandit_id))
-    conn.commit()
+    rows = conn.execute(
+        """SELECT i.*, u.name AS receiver_name, p.city, p.state, p.profession,
+                  p.photo_base64, p.dob, p.religion
+           FROM interests i
+           JOIN users u ON u.id=i.receiver_id
+           LEFT JOIN profiles p ON p.user_id=i.receiver_id
+           WHERE i.sender_id=? ORDER BY i.created_at DESC""",
+        (user_id,),
+    ).fetchall()
     conn.close()
+    return [dict(r) for r in rows]
 
 
-def add_pandit_by_admin(name, specialization, experience_years, languages,
-                        location, bio, price_per_puja):
-    """Admin adds a pandit directly — automatically approved, no linked user account."""
+def interest_status(sender_id, receiver_id):
     conn = get_conn()
-    conn.execute(
-        """INSERT INTO pandits
-           (name, specialization, experience_years, languages, location, bio, price_per_puja, status)
-           VALUES (?,?,?,?,?,?,?,'approved')""",
-        (name, specialization, experience_years, languages, location, bio, price_per_puja),
-    )
-    conn.commit()
+    row = conn.execute(
+        "SELECT status FROM interests WHERE sender_id=? AND receiver_id=?",
+        (sender_id, receiver_id),
+    ).fetchone()
     conn.close()
+    return row["status"] if row else None
 
 
-def update_pandit(pandit_id, name, specialization, experience_years,
-                  languages, location, bio, price_per_puja, available):
-    """Update all editable fields of a pandit profile."""
+def is_mutual(user_a, user_b):
     conn = get_conn()
-    conn.execute(
-        """UPDATE pandits SET name=?, specialization=?, experience_years=?,
-           languages=?, location=?, bio=?, price_per_puja=?, available=?
-           WHERE id=?""",
-        (name, specialization, experience_years, languages,
-         location, bio, price_per_puja, available, pandit_id),
-    )
-    conn.commit()
+    ab = conn.execute(
+        "SELECT 1 FROM interests WHERE sender_id=? AND receiver_id=? AND status='accepted'",
+        (user_a, user_b),
+    ).fetchone()
+    ba = conn.execute(
+        "SELECT 1 FROM interests WHERE sender_id=? AND receiver_id=? AND status='accepted'",
+        (user_b, user_a),
+    ).fetchone()
     conn.close()
+    return bool(ab and ba)
 
 
-def delete_pandit(pandit_id):
+def get_matches(user_id):
     conn = get_conn()
-    conn.execute("DELETE FROM pandits WHERE id=?", (pandit_id,))
-    conn.commit()
+    rows = conn.execute(
+        """SELECT u.name, u.phone, u.email, p.city, p.state, p.profession,
+                  p.photo_base64, p.dob, p.religion, p.user_id
+           FROM interests a
+           JOIN interests b ON a.sender_id=b.receiver_id AND a.receiver_id=b.sender_id
+           JOIN users u ON u.id=a.receiver_id
+           LEFT JOIN profiles p ON p.user_id=a.receiver_id
+           WHERE a.sender_id=? AND a.status='accepted' AND b.status='accepted'""",
+        (user_id,),
+    ).fetchall()
     conn.close()
+    return [dict(r) for r in rows]
 
 
-def admin_update_booking_status(booking_id, status):
-    conn = get_conn()
-    conn.execute("UPDATE bookings SET status=? WHERE id=?", (status, booking_id))
-    conn.commit()
-    conn.close()
-
+# ── Stats ─────────────────────────────────────────────────────────────────────
 
 def get_stats():
-    """Quick stats for the admin dashboard."""
     conn = get_conn()
-    c = conn.cursor()
-    return {
-        "total_users":        c.execute("SELECT COUNT(*) FROM users   WHERE role='user'").fetchone()[0],
-        "total_pandits":      c.execute("SELECT COUNT(*) FROM pandits WHERE status='approved'").fetchone()[0],
-        "pending_pandits":    c.execute("SELECT COUNT(*) FROM pandits WHERE status='pending'").fetchone()[0],
-        "total_bookings":     c.execute("SELECT COUNT(*) FROM bookings").fetchone()[0],
-        "confirmed_bookings": c.execute("SELECT COUNT(*) FROM bookings WHERE status='confirmed'").fetchone()[0],
-        "cancelled_bookings": c.execute("SELECT COUNT(*) FROM bookings WHERE status='cancelled'").fetchone()[0],
-    }
+    total    = conn.execute("SELECT COUNT(*) FROM users WHERE role='user'").fetchone()[0]
+    approved = conn.execute("SELECT COUNT(*) FROM profiles WHERE status='approved'").fetchone()[0]
+    pending  = conn.execute("SELECT COUNT(*) FROM profiles WHERE status='pending'").fetchone()[0]
+    matches  = conn.execute(
+        """SELECT COUNT(*) FROM interests a
+           JOIN interests b ON a.sender_id=b.receiver_id AND a.receiver_id=b.sender_id
+           WHERE a.status='accepted' AND b.status='accepted'"""
+    ).fetchone()[0]
+    conn.close()
+    return {"total": total, "approved": approved, "pending": pending, "matches": matches // 2}
 
 
-# ── photo helper ───────────────────────────────────────────────────────────────
-
-def encode_photo(uploaded_file):
-    """
-    Convert a Streamlit uploaded file into a base64 string for storage.
-    Returns None if no file was uploaded.
-    """
-    if uploaded_file is None:
-        return None
-    return base64.b64encode(uploaded_file.read()).decode("utf-8")
+init_db()
