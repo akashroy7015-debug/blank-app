@@ -2,36 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+/* ─── Dark app theme (auth, dashboard, pricing, etc.) ─── */
+.dark-app {
   background-color: #08080f;
   color: white;
 }
 
-/* Custom scrollbar */
+/* Dark scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #12121f; }
 ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 3px; }
 
-/* Glow effect */
-.glow-pink { box-shadow: 0 0 30px rgba(244, 114, 182, 0.3); }
-.glow-purple { box-shadow: 0 0 30px rgba(168, 85, 247, 0.3); }
-
-/* Progress bar animation */
+/* Dashboard animations */
 @keyframes progress-fill {
   from { width: 0%; }
   to { width: var(--progress-width); }
 }
+.progress-animated { animation: progress-fill 1.5s ease-out forwards; }
 
-.progress-animated {
-  animation: progress-fill 1.5s ease-out forwards;
-}
-
-/* Score count up animation */
 @keyframes score-count {
   from { opacity: 0; transform: scale(0.5); }
   to { opacity: 1; transform: scale(1); }
 }
+.score-animate { animation: score-count 0.8s ease-out forwards; }
 
-.score-animate {
-  animation: score-count 0.8s ease-out forwards;
+/* ─── Landing page light theme ─── */
+.landing-page {
+  --radius: 1rem;
+  --background: oklch(0.985 0.005 60);
+  --foreground: oklch(0.18 0.03 340);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.03 340);
+  --primary: oklch(0.64 0.24 5);
+  --primary-foreground: oklch(0.99 0.005 0);
+  --primary-glow: oklch(0.72 0.22 15);
+  --muted: oklch(0.96 0.015 60);
+  --muted-foreground: oklch(0.5 0.03 340);
+  --accent: oklch(0.92 0.06 60);
+  --border: oklch(0.92 0.015 340);
+
+  --gradient-aurora: linear-gradient(135deg,
+    oklch(0.95 0.04 290) 0%,
+    oklch(0.97 0.03 340) 35%,
+    oklch(0.96 0.05 60) 70%,
+    oklch(0.95 0.06 30) 100%);
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
+  --shadow-soft: 0 10px 40px -10px oklch(0.64 0.24 5 / 0.18);
+  --shadow-card: 0 24px 60px -20px oklch(0.4 0.1 340 / 0.18);
+  --shadow-pill: 0 8px 24px -8px oklch(0.64 0.24 5 / 0.35);
+
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  background: var(--gradient-aurora);
+  background-attachment: fixed;
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
+
+/* ─── Landing animations ─── */
+@keyframes float-up {
+  0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-15vh) rotate(360deg); opacity: 0; }
+}
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0)     rotate(-2deg); }
+  50%       { transform: translateY(-12px) rotate(2deg);  }
+}
+@keyframes marquee {
+  0%   { transform: translateX(0);    }
+  100% { transform: translateX(-50%); }
+}
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 0 0   oklch(0.64 0.24 5 / 0.45); }
+  50%     { box-shadow: 0 0 0 18px oklch(0.64 0.24 5 / 0);    }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.animate-float-up   { animation: float-up   14s linear      infinite; }
+.animate-float-soft { animation: float-soft  5s ease-in-out infinite; }
+.animate-marquee    { animation: marquee    30s linear      infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+.animate-fade-up    { animation: fade-up    0.8s ease-out   both;     }
+
+.font-display { font-family: 'Instrument Serif', ui-serif, Georgia, serif; }
+.shadow-soft  { box-shadow: var(--shadow-soft); }
+.shadow-card  { box-shadow: var(--shadow-card); }
+.shadow-pill  { box-shadow: var(--shadow-pill); }
+.bg-gradient-primary { background-image: var(--gradient-primary); }
