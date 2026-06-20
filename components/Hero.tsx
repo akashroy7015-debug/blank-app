@@ -42,6 +42,18 @@ export default function Hero() {
       <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto text-center">
+        {/* Live counter */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+          </span>
+          <p className="text-gray-400 text-sm">
+            <span className="text-white font-semibold">17,130</span>{' '}
+            {lang === 'hi' ? 'log abhi smarter messages likh rahe hain' : 'people writing smarter messages right now'}
+          </p>
+        </div>
+
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-2 text-pink-400 text-sm font-medium mb-8">
           <Sparkles size={14} />
