@@ -1,11 +1,11 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 
-// Prices in paise (INR × 100): ₹99 = 9900, ₹299 = 29900, ₹999 = 99900
+// Prices in cents (USD × 100): $4.99 = 499, $9.99 = 999, $39.99 = 3999
 const PLANS: Record<string, { price: number; interval: 'week' | 'month' | 'year'; name: string }> = {
-  weekly: { price: 9900, interval: 'week', name: 'RizzAI Weekly' },
-  monthly: { price: 29900, interval: 'month', name: 'RizzAI Monthly' },
-  yearly: { price: 99900, interval: 'year', name: 'RizzAI Yearly' },
+  weekly: { price: 499,  interval: 'week',  name: 'RizzAI Weekly' },
+  monthly: { price: 999,  interval: 'month', name: 'RizzAI Monthly' },
+  yearly: { price: 3999, interval: 'year',  name: 'RizzAI Yearly' },
 }
 
 export async function POST(req: Request) {
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       line_items: [
         {
           price_data: {
-            currency: 'inr',
+            currency: 'usd',
             product_data: { name: planConfig.name },
             unit_amount: planConfig.price,
             recurring: { interval: planConfig.interval },

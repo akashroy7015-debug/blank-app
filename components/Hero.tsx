@@ -7,9 +7,9 @@ import { useLanguage } from '@/lib/language'
 const translations = {
   en: {
     badge: 'Powered by Gemini AI',
-    heading1: "India's #1 AI",
-    heading2: 'Flirting Coach',
-    subheading: 'Screenshot daalo, perfect reply pao. Works on Bumble, Tinder, TrulyMadly, Aisle, Instagram DMs.',
+    heading1: 'Your AI',
+    heading2: 'Dating Coach',
+    subheading: 'Upload a chat screenshot — get 4 perfect replies, a compatibility score, and expert dating strategy. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.',
     cta: 'Try It Free',
     secondaryCta: 'See Pricing',
     stat1: { value: '10K+', label: 'Analyses Done' },
@@ -19,9 +19,9 @@ const translations = {
   },
   hi: {
     badge: 'Gemini AI se Powered',
-    heading1: 'India ka #1 AI',
-    heading2: 'Flirting Coach',
-    subheading: 'Screenshot daalo, perfect reply pao. Bumble, Tinder, TrulyMadly, Aisle, Instagram DMs — sab pe kaam karta hai.',
+    heading1: 'Tumhara AI',
+    heading2: 'Dating Coach',
+    subheading: 'Screenshot daalo, perfect reply pao. Tinder, Bumble, Hinge, TrulyMadly, Aisle, Instagram DMs — sab pe kaam karta hai.',
     cta: 'Free Mein Try Karo',
     secondaryCta: 'Pricing Dekho',
     stat1: { value: '10K+', label: 'Analyses Ho Chuke' },

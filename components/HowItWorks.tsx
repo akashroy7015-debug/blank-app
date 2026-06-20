@@ -7,29 +7,29 @@ const translations = {
   en: {
     badge: 'How It Works',
     heading: 'Perfect Replies in 3 Steps',
-    subheading: 'Works on Bumble India, Tinder, TrulyMadly, Aisle, Instagram DMs, WhatsApp and more.',
+    subheading: 'Works on every dating and messaging app worldwide — any language, any conversation.',
     steps: [
       {
         emoji: '📸',
         icon: Camera,
         title: 'Upload Screenshot',
-        desc: 'Take a screenshot of your chat on Bumble India, Tinder, TrulyMadly, Aisle, Instagram DMs, or WhatsApp and upload it here.',
+        desc: 'Take a screenshot of any chat — Tinder, Bumble, Hinge, OkCupid, TrulyMadly, Aisle, Instagram DMs, WhatsApp — and upload it here.',
       },
       {
         emoji: '🤖',
         icon: Sparkles,
         title: 'AI Analyzes',
-        desc: 'Gemini Vision reads the conversation tone, interest level, and context to understand the vibe — and crafts replies in English or Hinglish.',
+        desc: 'Gemini Vision reads the conversation tone, interest level, and context. Works in any language — English, Hindi, Hinglish, Spanish, French, and more.',
       },
       {
         emoji: '💬',
         icon: MessageSquare,
         title: 'Copy & Send',
-        desc: '4 reply styles + compatibility score + expert strategy tip, ready to copy and send. Apna reply copy karo 😉',
+        desc: '4 reply styles + compatibility score + expert strategy tip, ready to copy and send. Never wonder what to say again.',
       },
     ],
     appLabel: 'Works on:',
-    apps: ['Bumble India', 'Tinder', 'TrulyMadly', 'Aisle', 'Instagram DMs', 'WhatsApp'],
+    apps: ['Tinder', 'Bumble', 'Hinge', 'OkCupid', 'TrulyMadly', 'Aisle', 'Instagram DMs', 'WhatsApp'],
   },
   hi: {
     badge: 'Kaise Kaam Karta Hai',

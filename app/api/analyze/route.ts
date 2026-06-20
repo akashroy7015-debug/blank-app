@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `You are RizzAI — India's #1 expert AI dating coach. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
+    const prompt = `You are RizzAI — an expert AI dating coach for users worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
 {
   "replies": {
     "flirty": "A playful, flirty reply that creates tension (under 100 chars)",
@@ -30,8 +30,14 @@ export async function POST(req: Request) {
 
 The replies must be in first person from the perspective of the person who should reply next.
 Base the compatibility score on: response time signals visible in the chat, message length parity, emoji usage, engagement level, and overall interest signals.
-IMPORTANT: If the conversation is in Hindi or Hinglish (a mix of Hindi and English), write the replies in Hinglish — casual, fun, romanized Hindi mixed with English (e.g., "Yaar, tu toh bohot interesting hai 😏", "Chal na, coffee chalti hai?"). Match the language style and tone of the conversation.
-If you cannot read the chat or it's not a dating/romantic conversation, still provide helpful general replies.`
+CRITICAL: Detect the language of the conversation and write all 4 replies in that same language and style. Examples:
+- English conversation → English replies
+- Hindi/Hinglish → casual Hinglish replies (e.g. "Yaar, tu toh bohot interesting hai 😏")
+- Spanish → Spanish replies
+- French → French replies
+- Any other language → match that language
+Always match the tone, formality, and cultural style of the original conversation.
+If you cannot read the chat or it's not a dating/romantic conversation, still provide helpful general replies in English.`
 
     const result = await model.generateContent([
       {
