@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Copy, Check, Lightbulb, Heart, Zap, Smile, Star } from 'lucide-react'
+import { Copy, Check, Lightbulb, LucideIcon, Heart, Zap, Smile, Star } from 'lucide-react'
 import clsx from 'clsx'
 
 interface AnalysisResultData {
@@ -24,7 +24,7 @@ interface ReplyCard {
   key: keyof AnalysisResultData['replies']
   label: string
   emoji: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: LucideIcon
   gradient: string
   iconColor: string
   borderColor: string
