@@ -21,6 +21,7 @@ export default function LoginPage() {
 
     try {
       const supabase = createBrowserClient()
+      if (!supabase) { setError('Auth not configured. Add Supabase env vars in Vercel.'); return }
       const { error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {

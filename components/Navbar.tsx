@@ -17,6 +17,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const supabase = createBrowserClient()
+    if (!supabase) { setIsLoading(false); return }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setIsLoading(false)
@@ -31,7 +33,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     const supabase = createBrowserClient()
-    await supabase.auth.signOut()
+    if (supabase) await supabase.auth.signOut()
     router.push('/')
     setIsMenuOpen(false)
   }

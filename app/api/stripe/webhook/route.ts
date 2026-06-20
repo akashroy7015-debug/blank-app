@@ -22,6 +22,9 @@ export async function POST(req: Request) {
   }
 
   const supabase = createServerClient()
+  if (!supabase) {
+    return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
+  }
 
   try {
     switch (event.type) {
