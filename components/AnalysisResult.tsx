@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Copy, Check, Lightbulb, LucideIcon, Heart, Zap, Smile, Star } from 'lucide-react'
+import { Copy, Check, Lightbulb, LucideIcon, Heart, Zap, Flame, Sparkles } from 'lucide-react'
 
 interface AnalysisResultData {
-  replies: { flirty: string; confident: string; funny: string; sweet: string }
+  replies: { aura: string; cool: string; bold: string; gentleman: string }
   compatibilityScore: number
-  strategyTip: string
+  strategyNote: string
 }
 
 interface ReplyCard {
@@ -19,10 +19,10 @@ interface ReplyCard {
 }
 
 const replyCards: ReplyCard[] = [
-  { key: 'flirty',    label: 'Flirty',     icon: Heart, bgGradient: 'from-rose-50 to-pink-50',   borderColor: 'oklch(0.88 0.08 5)',    iconColor: 'oklch(0.64 0.24 5)'   },
-  { key: 'confident', label: 'Confident',  icon: Zap,   bgGradient: 'from-violet-50 to-fuchsia-50', borderColor: 'oklch(0.88 0.06 290)', iconColor: 'oklch(0.6 0.22 290)'  },
-  { key: 'funny',     label: 'Funny',      icon: Smile, bgGradient: 'from-amber-50 to-orange-50',  borderColor: 'oklch(0.9 0.09 60)',   iconColor: 'oklch(0.7 0.19 55)'   },
-  { key: 'sweet',     label: 'Sweet',      icon: Star,  bgGradient: 'from-emerald-50 to-teal-50',  borderColor: 'oklch(0.88 0.06 160)', iconColor: 'oklch(0.6 0.18 160)'  },
+  { key: 'aura',      label: 'Aura',      icon: Sparkles, bgGradient: 'from-violet-50 to-purple-50',  borderColor: 'oklch(0.88 0.06 290)', iconColor: 'oklch(0.6 0.22 290)'  },
+  { key: 'cool',      label: 'Cool',      icon: Zap,      bgGradient: 'from-sky-50 to-cyan-50',       borderColor: 'oklch(0.88 0.05 220)', iconColor: 'oklch(0.6 0.17 220)'  },
+  { key: 'bold',      label: 'Bold',      icon: Flame,    bgGradient: 'from-orange-50 to-amber-50',   borderColor: 'oklch(0.9 0.09 60)',   iconColor: 'oklch(0.65 0.2 40)'   },
+  { key: 'gentleman', label: 'Gentleman', icon: Heart,    bgGradient: 'from-rose-50 to-pink-50',      borderColor: 'oklch(0.88 0.08 5)',   iconColor: 'oklch(0.64 0.24 5)'   },
 ]
 
 function CopyButton({ text }: { text: string }) {
@@ -139,14 +139,14 @@ export default function AnalysisResult({ result, isLoading }: { result: Analysis
         <ScoreBar score={result.compatibilityScore} />
       </div>
 
-      {/* Strategy Tip */}
+      {/* Strategy Note */}
       <div className="rounded-2xl p-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
           <Lightbulb size={19} style={{ color: 'oklch(0.7 0.19 55)' }} />
-          Expert Strategy Tip
+          Strategy Note
         </h2>
         <div className="rounded-xl p-4" style={{ background: 'oklch(0.7 0.19 55 / 0.06)', border: '1px solid oklch(0.7 0.19 55 / 0.25)' }}>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>{result.strategyTip}</p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>{result.strategyNote}</p>
         </div>
       </div>
     </div>

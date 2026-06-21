@@ -8,9 +8,9 @@ import { Sparkles, AlertCircle, Crown } from 'lucide-react'
 import Link from 'next/link'
 
 interface AnalysisResultData {
-  replies: { flirty: string; confident: string; funny: string; sweet: string }
+  replies: { aura: string; cool: string; bold: string; gentleman: string }
   compatibilityScore: number
-  strategyTip: string
+  strategyNote: string
 }
 
 export default function DashboardPage() {
