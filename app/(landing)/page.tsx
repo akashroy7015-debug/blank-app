@@ -16,12 +16,12 @@ const MOMENTS = [
 ]
 
 const FEATURES = [
-  { emoji: '💌', en: { t: 'AI reply generation',   s: 'context-aware messages'      }, hi: { t: 'AI reply generation',  s: 'context-aware messages'    }, chip: 'AI+',  chipSub: 'in seconds'        },
-  { emoji: '🔍', en: { t: 'Chat analysis',          s: 'tone, intent, interest'      }, hi: { t: 'Chat analysis',         s: 'tone, intent, vibe'        }, chip: '87%',  chipSub: 'compatibility'     },
-  { emoji: '🎭', en: { t: '4 reply styles',         s: 'Flirty, Confident, Funny, Sweet' }, hi: { t: '4 reply styles', s: 'Flirty, Confident, Funny, Sweet' }, chip: '4x', chipSub: 'a tone for every chat' },
-  { emoji: '📸', en: { t: 'Screenshot reading',     s: 'PNG and JPG supported'       }, hi: { t: 'Screenshot reading',    s: 'PNG aur JPG supported'     }, chip: 'JPG', chipSub: 'fast analysis'      },
-  { emoji: '🧭', en: { t: 'Smart suggestions',      s: 'for every dating app'        }, hi: { t: 'Smart suggestions',     s: 'har dating app ke liye'    }, chip: '10+', chipSub: 'platforms'          },
-  { emoji: '🔒', en: { t: 'Private by design',      s: 'your chats stay yours'       }, hi: { t: 'Private by design',     s: 'tumhara data tumhara hai'  }, chip: 'E2E', chipSub: 'encrypted'          },
+  { emoji: '💌', en: { t: 'AI reply generation',       s: 'context-aware messages'      }, hi: { t: 'AI reply generation',       s: 'context-aware messages'      }, chips: ['AI+'],           chipSub: 'in seconds'          },
+  { emoji: '🔍', en: { t: 'Chat analysis',              s: 'tone, intent, interest'      }, hi: { t: 'Chat analysis',              s: 'tone, intent, vibe'          }, chips: ['87%'],           chipSub: 'compatibility score' },
+  { emoji: '🎭', en: { t: '4 reply styles',             s: 'Aura, Cool, Bold, Gentleman' }, hi: { t: '4 reply styles',             s: 'Aura, Cool, Bold, Gentleman' }, chips: ['4x'],            chipSub: 'a tone for every chat'},
+  { emoji: '📸', en: { t: 'Screenshot reading',         s: 'PNG and JPG supported'       }, hi: { t: 'Screenshot reading',         s: 'PNG aur JPG supported'       }, chips: ['JPG', 'PNG'],    chipSub: 'fast analysis'       },
+  { emoji: '🧭', en: { t: 'Strategy note',              s: 'what to write, when'         }, hi: { t: 'Strategy note',              s: 'kya likhein, kab likhein'    }, chips: ['next'],          chipSub: 'clearer next move'   },
+  { emoji: '🌍', en: { t: 'Multilingual intelligence',  s: '29 languages supported'      }, hi: { t: 'Multilingual intelligence',  s: '29 languages supported'      }, chips: ['TR', 'EN', 'DE'], chipSub: 'one app'             },
 ]
 
 const STYLES = [
@@ -265,8 +265,10 @@ export default function LandingPage() {
                 <div className="text-4xl">{f.emoji}</div>
                 <h3 className="mt-4 text-xl font-bold" style={{ color: 'var(--foreground)' }}>{copy.t}</h3>
                 <p className="mt-1 text-sm" style={{ color: 'var(--muted-foreground)' }}>{copy.s}</p>
-                <div className="mt-5 flex items-center gap-2 border-t pt-4 text-sm" style={{ borderColor: 'var(--border)' }}>
-                  <span className="rounded-lg px-2 py-1 text-xs font-bold text-white" style={{ background: 'var(--gradient-primary)' }}>{f.chip}</span>
+                <div className="mt-5 flex items-center gap-2 border-t pt-4 text-sm flex-wrap" style={{ borderColor: 'var(--border)' }}>
+                  {f.chips.map((c) => (
+                    <span key={c} className="rounded-lg px-2 py-1 text-xs font-bold text-white" style={{ background: 'var(--gradient-primary)' }}>{c}</span>
+                  ))}
                   <span style={{ color: 'var(--muted-foreground)' }}>{f.chipSub}</span>
                 </div>
               </div>
