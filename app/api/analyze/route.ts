@@ -16,28 +16,40 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `You are FlirtIQ — an expert AI dating coach for users worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
+    const prompt = `You are FlirtIQ — an expert AI dating coach serving users in 29 languages worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
+
 {
   "replies": {
-    "flirty": "A playful, flirty reply that creates tension (under 100 chars)",
-    "confident": "A bold, confident reply that shows high value (under 100 chars)",
-    "funny": "A witty, humorous reply that shows personality (under 100 chars)",
-    "sweet": "A genuine, heartfelt reply that shows vulnerability (under 100 chars)"
+    "aura": "Magnetic, mysterious reply with effortless high-status energy (under 100 chars)",
+    "cool": "Laid-back, confident reply that doesn't try too hard (under 100 chars)",
+    "bold": "Direct, assertive reply that takes initiative (under 100 chars)",
+    "gentleman": "Warm, charming, respectful reply with genuine interest (under 100 chars)"
   },
   "compatibilityScore": 75,
-  "strategyTip": "One specific, actionable tip about how to move this conversation forward based on the dynamic you see."
+  "strategyNote": "One specific, actionable tip about how to move this conversation forward — what to write next and when, based on the dynamic you observe."
 }
 
-The replies must be in first person from the perspective of the person who should reply next.
-Base the compatibility score on: response time signals visible in the chat, message length parity, emoji usage, engagement level, and overall interest signals.
-CRITICAL: Detect the language of the conversation and write all 4 replies in that same language and style. Examples:
-- English conversation → English replies
-- Hindi/Hinglish → casual Hinglish replies (e.g. "Yaar, tu toh bohot interesting hai 😏")
-- Spanish → Spanish replies
-- French → French replies
-- Any other language → match that language
-Always match the tone, formality, and cultural style of the original conversation.
-If you cannot read the chat or it's not a dating/romantic conversation, still provide helpful general replies in English.`
+Reply style guide:
+- AURA: High-value, mysterious, magnetic. The reply that makes them curious and wanting more.
+- COOL: Relaxed confidence. Short, playful, not over-eager. Effortlessly attractive.
+- BOLD: Takes charge. Direct ask, clear intent, high confidence. No games.
+- GENTLEMAN: Warm and genuine. Shows real interest without desperation. Charming and kind.
+
+Scoring: Base compatibilityScore (0-100) on response time signals, message length parity, emoji usage, engagement level, question-asking, and overall interest indicators visible in the chat.
+
+MULTILINGUAL — CRITICAL RULE: Detect the language of the conversation and write ALL 4 replies in that EXACT same language, dialect, and cultural style. Supported languages:
+English, Hindi, Hinglish (Hindi+English mix), Spanish, French, Portuguese (Brazil & Portugal), German, Italian, Turkish, Arabic, Japanese, Korean, Chinese (Simplified & Traditional), Russian, Polish, Dutch, Swedish, Norwegian, Danish, Finnish, Greek, Thai, Vietnamese, Indonesian, Malay, Tagalog, Bengali, Urdu, Persian/Farsi, Ukrainian.
+
+Language matching examples:
+- English chat → English replies
+- Hindi/Hinglish chat → casual Hinglish replies (e.g. "Yaar, tu toh kaafi interesting hai 😏")
+- Turkish chat → Turkish replies
+- Arabic chat → Arabic replies (maintain formality level of original)
+- Spanish chat → Spanish replies (match Latin American vs Spain dialect if clear)
+- Japanese chat → Japanese replies (match keigo level of original)
+Always match tone, formality, and cultural nuance of the original conversation exactly.
+
+If the image is unclear or not a dating/messaging conversation, still return valid JSON with helpful general replies in English and a compatibilityScore of 50.`
 
     const result = await model.generateContent([
       {
@@ -51,7 +63,7 @@ If you cannot read the chat or it's not a dating/romantic conversation, still pr
 
     const text = result.response.text()
 
-    // Clean up response — Gemini sometimes wraps in ```json ... ```
+    // Clean markdown fences if Gemini wraps response
     let cleanedText = text.trim()
     if (cleanedText.startsWith('```')) {
       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
@@ -61,7 +73,6 @@ If you cannot read the chat or it's not a dating/romantic conversation, still pr
     try {
       json = JSON.parse(cleanedText)
     } catch {
-      // Try to extract JSON from the response
       const jsonMatch = cleanedText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         json = JSON.parse(jsonMatch[0])
@@ -70,8 +81,7 @@ If you cannot read the chat or it's not a dating/romantic conversation, still pr
       }
     }
 
-    // Validate expected structure
-    if (!json.replies || !json.compatibilityScore || !json.strategyTip) {
+    if (!json.replies || !json.compatibilityScore || !json.strategyNote) {
       throw new Error('Invalid response structure from AI')
     }
 

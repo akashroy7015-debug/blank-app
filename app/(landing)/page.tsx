@@ -25,10 +25,10 @@ const FEATURES = [
 ]
 
 const STYLES = [
-  { name: 'FLIRTY',    color: 'from-rose-400 to-pink-500',     en: "You're making it really hard to focus on anything else 😏",           hi: 'Tumse baat karte karte sab bhool jaata hoon 😏'         },
-  { name: 'CONFIDENT', color: 'from-fuchsia-500 to-purple-500', en: "I know exactly where this is going, and I like it",                   hi: 'Mujhe pata hai yeh kahan ja raha hai — aur mujhe pasand hai' },
-  { name: 'FUNNY',     color: 'from-amber-400 to-orange-500',   en: "My dog said you seem cool, and he's a great judge of character 🐶",   hi: 'Mere dog ne bola tum cool ho, aur uska taste kaafi accha hai 🐶' },
-  { name: 'SWEET',     color: 'from-pink-300 to-rose-300',      en: "Honestly, talking to you is the best part of my day",                 hi: 'Sachchi, tumse baat karna din ka sabse accha hissa hai'   },
+  { name: 'AURA',      color: 'from-violet-500 to-purple-600', en: "You seem like the kind of person who's interesting enough to lose track of time with 🌙", hi: 'Tumse baat karna alag hi experience hai, genuinely 🌙'         },
+  { name: 'COOL',      color: 'from-sky-400 to-cyan-500',      en: "Kinda busy, but for the right vibe I could make time 😎",                                  hi: 'Busy hoon, but sahi vibe ke liye time nikal sakta hoon 😎'    },
+  { name: 'BOLD',      color: 'from-orange-500 to-red-500',    en: "I like where this is heading. Let's grab drinks Thursday.",                                 hi: 'Mujhe pata hai yeh kahan ja raha hai. Thursday ko milte hain?' },
+  { name: 'GENTLEMAN', color: 'from-rose-400 to-pink-500',     en: "Honestly, this has been the best conversation I've had in a while.",                        hi: 'Sachchi, tumse baat karna din ka best part raha aaj.'         },
 ]
 
 const PLANS = [
@@ -211,7 +211,7 @@ export default function LandingPage() {
                 <div className="text-[10px] font-bold tracking-widest uppercase opacity-80">AI suggestion</div>
                 <div className="mt-1 text-sm leading-snug">&ldquo;I had plans, but my schedule could update if a better offer rolls in 😄&rdquo;</div>
                 <div className="mt-3 flex gap-1.5 text-[10px] font-semibold flex-wrap">
-                  {['Flirty', 'Confident', 'Funny', 'Sweet'].map((s) => (
+                  {['Aura', 'Cool', 'Bold', 'Gentleman'].map((s) => (
                     <span key={s} className="rounded-full bg-white/20 px-2 py-1">{s}</span>
                   ))}
                 </div>
