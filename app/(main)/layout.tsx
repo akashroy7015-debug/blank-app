@@ -3,11 +3,9 @@ import Footer from '@/components/Footer'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[#08080f] text-white min-h-screen flex flex-col" style={{ fontFamily: "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif" }}>
+    <div className="landing-page min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1">
-        {children}
-      </div>
+      <div className="flex-1">{children}</div>
       <Footer />
     </div>
   )

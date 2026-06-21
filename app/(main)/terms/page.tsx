@@ -15,10 +15,10 @@ export default function TermsPage() {
           </Link>
         </div>
 
-        <h1 className="text-4xl font-bold text-white mb-3">Terms of Service</h1>
-        <p className="text-gray-500 text-sm mb-12">Last updated: June 20, 2026</p>
+        <h1 className="font-display text-4xl italic mb-3" style={{ color: 'var(--foreground)' }}>Terms of Service</h1>
+        <p className="text-sm mb-12" style={{ color: 'var(--muted-foreground)' }}>Last updated: June 20, 2026</p>
 
-        <div className="prose prose-invert max-w-none space-y-10 text-gray-300 text-sm leading-relaxed">
+        <div className="max-w-none space-y-10 text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>

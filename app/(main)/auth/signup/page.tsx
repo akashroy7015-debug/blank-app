@@ -18,35 +18,14 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.')
-      return
-    }
-
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     setIsLoading(true)
-
     try {
       const supabase = createBrowserClient()
-      if (!supabase) { setError('Auth not configured. Add Supabase env vars in Vercel.'); return }
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      })
-
-      if (error) {
-        setError(error.message)
-        return
-      }
-
+      if (!supabase) { setError('Auth not configured. Add Supabase env vars in Vercel.'); setIsLoading(false); return }
+      const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/dashboard` } })
+      if (error) { setError(error.message); return }
       setSuccess(true)
     } catch {
       setError('An unexpected error occurred. Please try again.')
@@ -55,23 +34,34 @@ export default function SignupPage() {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    background: 'var(--muted)',
+    border: '1px solid var(--border)',
+    borderRadius: '0.75rem',
+    padding: '0.75rem 1rem',
+    color: 'var(--foreground)',
+    fontSize: '0.875rem',
+    outline: 'none',
+  }
+
   if (success) {
     return (
       <main className="min-h-screen flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="bg-[#12121f] border border-white/8 rounded-2xl p-8">
-            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="text-green-400" size={32} />
+        <div className="w-full max-w-md">
+          <div className="rounded-3xl p-10 text-center shadow-card" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'oklch(0.6 0.18 160 / 0.12)' }}>
+              <CheckCircle size={32} style={{ color: 'oklch(0.6 0.18 160)' }} />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Check your email</h2>
-            <p className="text-gray-400 mb-6">
-              We&apos;ve sent a confirmation link to <span className="text-white font-medium">{email}</span>.
-              Click the link to activate your account.
+            <h2 className="font-display text-3xl mb-2" style={{ color: 'var(--foreground)' }}>Check your email</h2>
+            <p className="text-sm mb-6" style={{ color: 'var(--muted-foreground)' }}>
+              We&apos;ve sent a confirmation link to <strong style={{ color: 'var(--foreground)' }}>{email}</strong>.
+              Click it to activate your account.
             </p>
-            <Link
-              href="/auth/login"
-              className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-xl px-6 py-3 transition-all"
-            >
+            <Link href="/auth/login"
+              className="inline-block rounded-full px-6 py-3 font-semibold text-white shadow-pill transition-transform hover:scale-105"
+              style={{ background: 'var(--gradient-primary)' }}>
               Back to Login
             </Link>
           </div>
@@ -83,110 +73,65 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold">
-            <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              ✨ FlirtIQ
-            </span>
+          <Link href="/" className="flex items-center justify-center gap-2 mb-6">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl text-lg text-white shadow-pill"
+              style={{ background: 'var(--gradient-primary)' }}>💗</span>
+            <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
           </Link>
-          <h1 className="text-2xl font-bold mt-4 mb-2">Create your account</h1>
-          <p className="text-gray-400">Start free — no credit card required</p>
+          <h1 className="font-display text-3xl mb-2" style={{ color: 'var(--foreground)' }}>Create your account</h1>
+          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Start free — no credit card required</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-[#12121f] border border-white/8 rounded-2xl p-8">
+        <div className="rounded-3xl p-8 shadow-card" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
           <form onSubmit={handleSignup} className="space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-                <AlertCircle className="text-red-400 shrink-0" size={18} />
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{ background: 'oklch(0.577 0.245 27.325 / 0.08)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
+                <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+                <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full bg-[#08080f] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  className="w-full bg-[#08080f] border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all"
-                  placeholder="Min. 8 characters"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+            {[
+              { label: 'Email address', type: 'email', value: email, set: setEmail, placeholder: 'you@example.com' },
+              { label: 'Password', type: showPassword ? 'text' : 'password', value: password, set: setPassword, placeholder: 'Min. 8 characters', toggle: () => setShowPassword(!showPassword), shown: showPassword },
+              { label: 'Confirm password', type: showConfirmPassword ? 'text' : 'password', value: confirmPassword, set: setConfirmPassword, placeholder: 'Repeat password', toggle: () => setShowConfirmPassword(!showConfirmPassword), shown: showConfirmPassword },
+            ].map((field) => (
+              <div key={field.label}>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>{field.label}</label>
+                <div className="relative">
+                  <input type={field.type} value={field.value} onChange={(e) => field.set(e.target.value)} required
+                    style={{ ...inputStyle, paddingRight: field.toggle ? '3rem' : '1rem' }}
+                    placeholder={field.placeholder}
+                    onFocus={e => (e.target.style.borderColor = 'var(--primary)')}
+                    onBlur={e => (e.target.style.borderColor = 'var(--border)')} />
+                  {field.toggle && (
+                    <button type="button" onClick={field.toggle}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity"
+                      style={{ color: 'var(--muted-foreground)' }}>
+                      {field.shown ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="w-full bg-[#08080f] border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all"
-                  placeholder="Repeat password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl px-6 py-3 transition-all flex items-center justify-center gap-2"
-            >
+            <button type="submit" disabled={isLoading}
+              className="w-full rounded-full py-3 font-semibold text-white transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: 'var(--gradient-primary)' }}>
               {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                'Create Account — Free'
-              )}
+                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account...</>
+              ) : 'Create Account — Free'}
             </button>
           </form>
 
-          <div className="mt-6 text-center text-gray-400 text-sm">
+          <p className="mt-6 text-center text-sm" style={{ color: 'var(--muted-foreground)' }}>
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-pink-400 hover:text-pink-300 font-medium transition-colors">
+            <Link href="/auth/login" className="font-semibold hover:opacity-70 transition-opacity" style={{ color: 'var(--primary)' }}>
               Sign in
             </Link>
-          </div>
+          </p>
         </div>
       </div>
     </main>

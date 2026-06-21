@@ -87,12 +87,13 @@ export default function PricingSection() {
     <section className="py-20 px-4" id="pricing">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-2 text-pink-400 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
+            style={{ background: 'oklch(0.64 0.24 5 / 0.1)', border: '1px solid oklch(0.64 0.24 5 / 0.2)', color: 'var(--primary)' }}>
             <Crown size={14} />
             {c.badge}
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{c.heading}</h2>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">{c.sub}</p>
+          <h2 className="font-display text-3xl md:text-4xl mb-4 italic" style={{ color: 'var(--foreground)' }}>{c.heading}</h2>
+          <p className="text-lg max-w-xl mx-auto" style={{ color: 'var(--muted-foreground)' }}>{c.sub}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -103,7 +104,8 @@ export default function PricingSection() {
             return (
               <div
                 key={plan.key}
-                className={`relative flex flex-col bg-[#12121f] border ${plan.border} rounded-2xl p-6 transition-all hover:border-pink-500/40 ${plan.highlight ? 'ring-1 ring-pink-500/30' : ''}`}
+                className={`relative flex flex-col rounded-2xl p-6 transition-all hover:-translate-y-1 shadow-soft ${plan.highlight ? 'ring-2' : ''}`}
+                style={{ background: 'var(--card)', border: `1px solid var(--border)`, ...(plan.highlight ? { ringColor: 'var(--primary)' } : {}) }}
               >
                 {badgeLabel && (
                   <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${plan.gradient}`}>
@@ -112,22 +114,22 @@ export default function PricingSection() {
                 )}
 
                 <div className="mb-4 mt-2">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(236,72,153,0.15)' }}>
-                    <Icon size={20} className="text-pink-400" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: 'oklch(0.64 0.24 5 / 0.1)' }}>
+                    <Icon size={20} style={{ color: 'var(--primary)' }} />
                   </div>
-                  <h3 className="text-white font-bold text-xl">{p.name}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{p.desc}</p>
+                  <h3 className="font-bold text-xl" style={{ color: 'var(--foreground)' }}>{p.name}</h3>
+                  <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>{p.desc}</p>
                 </div>
 
                 <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-white">{p.price}</span>
-                  <span className="text-gray-500 text-sm ml-1">{p.period}</span>
+                  <span className="text-4xl font-extrabold" style={{ color: 'var(--foreground)' }}>{p.price}</span>
+                  <span className="text-sm ml-1" style={{ color: 'var(--muted-foreground)' }}>{p.period}</span>
                 </div>
 
                 <ul className="space-y-2 mb-8 flex-1">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
-                      <Check size={15} className="text-pink-400 mt-0.5 shrink-0" />
+                    <li key={f} className="flex items-start gap-2 text-sm" style={{ color: 'var(--foreground)' }}>
+                      <Check size={15} style={{ color: 'var(--primary)', marginTop: '0.125rem', flexShrink: 0 }} />
                       {f}
                     </li>
                   ))}

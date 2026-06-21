@@ -6,15 +6,9 @@ import AnalysisResult from '@/components/AnalysisResult'
 import { getTodayUsage, incrementUsage, canUseFreeTier, FREE_LIMIT } from '@/lib/usage'
 import { Sparkles, AlertCircle, Crown } from 'lucide-react'
 import Link from 'next/link'
-import clsx from 'clsx'
 
 interface AnalysisResultData {
-  replies: {
-    flirty: string
-    confident: string
-    funny: string
-    sweet: string
-  }
+  replies: { flirty: string; confident: string; funny: string; sweet: string }
   compatibilityScore: number
   strategyTip: string
 }
@@ -30,7 +24,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setUsageCount(getTodayUsage())
-
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
       setSuccessMessage('Payment successful! You now have unlimited analyses.')
@@ -38,38 +31,27 @@ export default function DashboardPage() {
   }, [])
 
   const handleAnalyze = async () => {
-    if (!imageFile) {
-      setError('Please upload a chat screenshot first.')
-      return
-    }
-
-    if (!canUseFreeTier()) {
-      setError('You have used all 3 free analyses for today. Upgrade to continue.')
-      return
-    }
-
+    if (!imageFile) { setError('Please upload a chat screenshot first.'); return }
+    if (!canUseFreeTier()) { setError('You have used all 3 free analyses for today. Upgrade to continue.'); return }
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
-
     try {
-      const base64 = await fileToBase64(imageFile)
-      const base64Data = base64.split(',')[1]
-
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(imageFile)
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+      })
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: base64Data,
-          mimeType: imageFile.type,
-        }),
+        body: JSON.stringify({ imageBase64: base64.split(',')[1], mimeType: imageFile.type }),
       })
-
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
         throw new Error(errData.error || 'Analysis failed. Please try again.')
       }
-
       const data = await response.json()
       setResult(data)
       incrementUsage()
@@ -81,15 +63,6 @@ export default function DashboardPage() {
     }
   }
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-    })
-  }
-
   const remaining = FREE_LIMIT - usageCount
   const isLimitReached = !canUseFreeTier()
 
@@ -98,108 +71,78 @@ export default function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-2 text-pink-400 text-sm font-medium mb-4">
-            <Sparkles size={14} />
-            Powered by Gemini AI
+          <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
+            style={{ background: 'oklch(0.64 0.24 5 / 0.1)', color: 'var(--primary)', border: '1px solid oklch(0.64 0.24 5 / 0.2)' }}>
+            <Sparkles size={14} /> Powered by Gemini AI
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Analyze Your{' '}
-            <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              Chat
-            </span>
+          <h1 className="font-display text-4xl md:text-5xl mb-4" style={{ color: 'var(--foreground)' }}>
+            Analyze Your <span className="italic" style={{ color: 'var(--primary)' }}>Chat</span>
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-lg" style={{ color: 'var(--muted-foreground)' }}>
             Upload a screenshot to get 4 perfect replies, a compatibility score, and expert strategy
           </p>
         </div>
 
-        {/* Success Message */}
+        {/* Success */}
         {successMessage && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-center gap-3">
-            <Crown className="text-green-400 shrink-0" size={20} />
-            <p className="text-green-400">{successMessage}</p>
+          <div className="mb-6 rounded-2xl p-4 flex items-center gap-3"
+            style={{ background: 'oklch(0.6 0.18 160 / 0.08)', border: '1px solid oklch(0.6 0.18 160 / 0.3)' }}>
+            <Crown size={19} style={{ color: 'oklch(0.6 0.18 160)', flexShrink: 0 }} />
+            <p className="text-sm" style={{ color: 'oklch(0.6 0.18 160)' }}>{successMessage}</p>
           </div>
         )}
 
         {/* Usage Banner */}
-        <div className={clsx(
-          'mb-8 rounded-xl p-4 flex items-center justify-between',
-          isLimitReached
-            ? 'bg-red-500/10 border border-red-500/20'
-            : 'bg-[#12121f] border border-white/8'
-        )}>
+        <div className={`mb-8 rounded-2xl p-4 flex items-center justify-between`}
+          style={isLimitReached
+            ? { background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }
+            : { background: 'var(--card)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3">
-            {isLimitReached ? (
-              <AlertCircle className="text-red-400 shrink-0" size={20} />
-            ) : (
-              <Sparkles className="text-pink-400 shrink-0" size={20} />
-            )}
+            {isLimitReached
+              ? <AlertCircle size={19} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+              : <Sparkles size={19} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
             <div>
-              <p className={clsx(
-                'font-medium',
-                isLimitReached ? 'text-red-400' : 'text-white'
-              )}>
-                {isLimitReached
-                  ? 'Daily limit reached'
-                  : `${remaining} of ${FREE_LIMIT} free analyses remaining today`
-                }
+              <p className="font-medium text-sm" style={{ color: isLimitReached ? 'oklch(0.577 0.245 27.325)' : 'var(--foreground)' }}>
+                {isLimitReached ? 'Daily limit reached' : `${remaining} of ${FREE_LIMIT} free analyses remaining today`}
               </p>
-              {!isLimitReached && (
-                <p className="text-gray-500 text-sm">Resets at midnight</p>
-              )}
+              {!isLimitReached && <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>}
             </div>
           </div>
           {isLimitReached && (
-            <Link
-              href="/pricing"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-xl px-4 py-2 text-sm transition-all shrink-0"
-            >
+            <Link href="/pricing"
+              className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105 shrink-0"
+              style={{ background: 'var(--gradient-primary)' }}>
               Upgrade Now
             </Link>
           )}
         </div>
 
         {/* Upload Section */}
-        <div className="bg-[#12121f] border border-white/8 rounded-2xl p-6 md:p-8 mb-6">
-          <ImageUploader
-            setImageFile={setImageFile}
-            setImagePreview={setImagePreview}
-            imagePreview={imagePreview}
-            imageFile={imageFile}
-          />
+        <div className="rounded-3xl p-6 md:p-8 mb-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <ImageUploader setImageFile={setImageFile} setImagePreview={setImagePreview} imagePreview={imagePreview} imageFile={imageFile} />
 
           {error && (
-            <div className="mt-4 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-              <AlertCircle className="text-red-400 shrink-0" size={18} />
-              <p className="text-red-400 text-sm">{error}</p>
+            <div className="mt-4 rounded-xl p-4 flex items-center gap-3"
+              style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
+              <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+              <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
             </div>
           )}
 
-          <button
-            onClick={handleAnalyze}
+          <button onClick={handleAnalyze}
             disabled={!imageFile || isAnalyzing || isLimitReached}
-            className={clsx(
-              'mt-6 w-full font-semibold rounded-xl px-6 py-4 transition-all flex items-center justify-center gap-2 text-lg',
-              !imageFile || isLimitReached
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white glow-pink'
-            )}
-          >
+            className="mt-6 w-full rounded-full py-4 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={!imageFile || isLimitReached
+              ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
+              : { background: 'var(--gradient-primary)', color: 'white' }}>
             {isAnalyzing ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Analyzing with Gemini AI...
-              </>
+              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing with Gemini AI...</>
             ) : (
-              <>
-                <Sparkles size={20} />
-                Analyze My Chat
-              </>
+              <><Sparkles size={19} /> Analyze My Chat</>
             )}
           </button>
         </div>
 
-        {/* Results */}
         <AnalysisResult result={result} isLoading={isAnalyzing} />
       </div>
     </main>
