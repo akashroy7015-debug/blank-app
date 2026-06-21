@@ -354,6 +354,123 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* APP DOWNLOAD */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
+        <div className="rounded-[2.5rem] overflow-hidden shadow-card" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <div className="grid md:grid-cols-2 gap-0">
+            {/* Left: text */}
+            <div className="p-10 md:p-14 flex flex-col justify-center">
+              <div className="text-sm font-semibold tracking-widest uppercase mb-4" style={{ color: 'var(--primary)' }}>
+                📱 {lang === 'hi' ? 'App download karo' : 'Get the app'}
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl tracking-tight mb-4" style={{ color: 'var(--foreground)' }}>
+                {lang === 'hi' ? 'Kahin bhi,\n' : 'Your co-pilot,\n'}
+                <span className="italic" style={{ color: 'var(--primary)' }}>
+                  {lang === 'hi' ? 'kisi bhi waqt.' : 'everywhere.'}
+                </span>
+              </h2>
+              <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--muted-foreground)' }}>
+                {lang === 'hi'
+                  ? 'FlirtIQ ab aapke phone par available hai. Tinder, Bumble ya WhatsApp se screenshot lo aur seedha app mein analyze karo.'
+                  : 'FlirtIQ is available on your phone. Screenshot directly from Tinder, Bumble, or WhatsApp and analyze without switching apps.'}
+              </p>
+
+              {/* Store badges */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* App Store */}
+                <a href="#" onClick={e => e.preventDefault()}
+                  className="flex items-center gap-3 rounded-2xl px-5 py-3.5 transition-transform hover:scale-105 shadow-soft"
+                  style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+                  title="iOS App — coming soon">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 shrink-0" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                  <div>
+                    <div className="text-[10px] opacity-70 leading-none">{lang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
+                    <div className="text-base font-bold leading-tight">App Store</div>
+                  </div>
+                </a>
+
+                {/* Google Play */}
+                <a href="#" onClick={e => e.preventDefault()}
+                  className="flex items-center gap-3 rounded-2xl px-5 py-3.5 transition-transform hover:scale-105 shadow-soft"
+                  style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+                  title="Android App — coming soon">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 shrink-0" fill="currentColor">
+                    <path d="M3.18 23.76c.3.17.64.24.99.2l12.23-12.24L13 8.32 3.18 23.76zM20.72 9.58l-3.06-1.76-3.4 3.4 3.4 3.4 3.09-1.78c.88-.51.88-1.75-.03-2.26zM2.1.49C1.82.64 1.65.95 1.65 1.37v21.26c0 .42.17.73.46.88L14.1 11.55 2.1.49zM16.34 3.4L4.12.2c-.35-.1-.68-.03-.99.14L15.99 11.2l.35-.35L16.34 3.4z"/>
+                  </svg>
+                  <div>
+                    <div className="text-[10px] opacity-70 leading-none">{lang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
+                    <div className="text-base font-bold leading-tight">Google Play</div>
+                  </div>
+                </a>
+              </div>
+
+              {/* PWA install note */}
+              <p className="mt-5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                {lang === 'hi'
+                  ? '💡 Abhi ke liye: browser mein "Add to Home Screen" karke install karo — bilkul app jaisi feel hai.'
+                  : '💡 Right now: tap "Add to Home Screen" in your browser to install — works exactly like a native app.'}
+              </p>
+            </div>
+
+            {/* Right: phone preview */}
+            <div className="relative flex items-center justify-center p-10 md:p-14"
+              style={{ background: 'var(--gradient-primary)' }}>
+              {/* Decorative blobs */}
+              <div className="absolute top-8 right-8 text-5xl opacity-20">💗</div>
+              <div className="absolute bottom-8 left-8 text-4xl opacity-20">✨</div>
+              <div className="absolute top-1/2 left-4 text-3xl opacity-10">💌</div>
+
+              {/* Mini phone mockup */}
+              <div className="relative w-52">
+                <div className="rounded-[2rem] p-1 shadow-card" style={{ border: '8px solid rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.9)' }}>
+                  <div className="rounded-[1.5rem] overflow-hidden" style={{ background: 'var(--background)' }}>
+                    {/* Status bar */}
+                    <div className="flex items-center justify-between px-4 pt-3 pb-1 text-[8px]" style={{ color: 'var(--foreground)' }}>
+                      <span className="font-semibold">9:41</span>
+                      <div className="flex gap-1">
+                        <span>▲</span><span>●●●●</span>
+                      </div>
+                    </div>
+                    {/* App header */}
+                    <div className="px-4 py-2 text-center">
+                      <div className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>💗 FlirtIQ</div>
+                    </div>
+                    {/* Chat bubbles */}
+                    <div className="px-3 py-2 space-y-2">
+                      <div className="text-[9px] rounded-xl rounded-tl-sm px-3 py-1.5 max-w-[80%]"
+                        style={{ background: 'var(--muted)', color: 'var(--foreground)' }}>
+                        Hey! Plans tonight? 😊
+                      </div>
+                      <div className="text-[9px] rounded-xl rounded-tr-sm px-3 py-1.5 max-w-[80%] ml-auto text-white"
+                        style={{ background: 'var(--gradient-primary)' }}>
+                        Depends on your offer 😏
+                      </div>
+                    </div>
+                    {/* Score */}
+                    <div className="mx-3 mb-2 rounded-xl p-2 text-center" style={{ background: 'var(--muted)' }}>
+                      <div className="text-[8px] font-semibold" style={{ color: 'var(--muted-foreground)' }}>COMPATIBILITY</div>
+                      <div className="text-lg font-bold" style={{ color: 'var(--primary)' }}>87%</div>
+                    </div>
+                    {/* Style chips */}
+                    <div className="px-3 pb-3 flex flex-wrap gap-1">
+                      {['Flirty', 'Confident', 'Funny', 'Sweet'].map(s => (
+                        <span key={s} className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                          style={{ background: 'var(--gradient-primary)' }}>{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {/* Floating hearts */}
+                <span className="animate-float-soft absolute -top-3 -right-4 text-2xl" style={{ animationDelay: '0.3s' }}>💕</span>
+                <span className="animate-float-soft absolute -bottom-2 -left-4 text-xl" style={{ animationDelay: '1s' }}>✨</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* PRICING */}
       <section id="pricing" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
         <div className="text-center mb-12">

@@ -1,0 +1,36 @@
+{
+  "name": "FlirtIQ — AI Dating Assistant",
+  "short_name": "FlirtIQ",
+  "description": "Upload a chat screenshot, get 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram & more.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#fdf7f0",
+  "theme_color": "#e03e52",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FlirtIQ Dashboard"
+    }
+  ],
+  "categories": ["lifestyle", "social", "utilities"],
+  "lang": "en"
+}
