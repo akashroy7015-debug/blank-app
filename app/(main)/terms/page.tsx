@@ -30,7 +30,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">2. Description of Service</h2>
             <p>
-              FlirtIQ is an AI-powered dating chat assistant. You upload a screenshot of a conversation from a dating app or messaging platform, and our AI analyzes the tone and context to generate reply suggestions, a compatibility score, and conversation strategy tips. FlirtIQ is powered by Google Gemini AI.
+              FlirtIQ is an AI-powered dating chat assistant. You upload a screenshot of a conversation from a dating app or messaging platform, and our AI analyzes the tone and context to generate reply suggestions, a compatibility score, and conversation strategy tips. FlirtIQ is powered by advanced AI technology.
             </p>
             <p className="mt-3">
               FlirtIQ is a tool to assist communication — it does not guarantee any romantic outcome, date, or relationship. Replies are AI-generated suggestions, not professional advice.

@@ -19,7 +19,7 @@ const translations = {
         emoji: '🤖',
         icon: Sparkles,
         title: 'AI Analyzes',
-        desc: 'Gemini Vision reads the conversation tone, interest level, and context. Works in any language — English, Hindi, Hinglish, Spanish, French, and more.',
+        desc: 'Our AI reads the conversation tone, interest level, and context. Works in any language — English, Hindi, Hinglish, Spanish, French, and more.',
       },
       {
         emoji: '💬',
@@ -46,7 +46,7 @@ const translations = {
         emoji: '🤖',
         icon: Sparkles,
         title: 'AI Analyse Karega',
-        desc: 'Gemini Vision conversation ki vibe samjhega aur tumhare liye English ya Hinglish mein perfect replies banayega.',
+        desc: 'Hamara AI conversation ki vibe samjhega aur tumhare liye English ya Hinglish mein perfect replies banayega.',
       },
       {
         emoji: '💬',

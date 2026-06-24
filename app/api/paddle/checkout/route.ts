@@ -2,25 +2,32 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 
 const PRICE_IDS: Record<string, string> = {
-  weekly:  process.env.PADDLE_PRICE_WEEKLY  ?? '',
-  monthly: process.env.PADDLE_PRICE_MONTHLY ?? '',
-  yearly:  process.env.PADDLE_PRICE_YEARLY  ?? '',
+  weekly:         process.env.PADDLE_PRICE_WEEKLY          ?? '',
+  monthly:        process.env.PADDLE_PRICE_MONTHLY         ?? '',
+  yearly:         process.env.PADDLE_PRICE_YEARLY          ?? '',
+  credits_10:     process.env.PADDLE_PRICE_CREDITS_10      ?? '',
+  credits_50:     process.env.PADDLE_PRICE_CREDITS_50      ?? '',
+  credits_150:    process.env.PADDLE_PRICE_CREDITS_150     ?? '',
+  credits_custom: process.env.PADDLE_PRICE_CREDITS_CUSTOM  ?? '',
 }
 
 export async function POST(req: Request) {
   try {
-    const { plan } = await req.json()
+    const { plan, quantity } = await req.json()
 
     if (!plan || !PRICE_IDS[plan]) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
+
+    const qty = (plan === 'credits_custom' && typeof quantity === 'number' && quantity >= 1)
+      ? Math.min(Math.floor(quantity), 10000)
+      : 1
 
     const apiKey = process.env.PADDLE_API_KEY
     if (!apiKey) {
       return NextResponse.json({ error: 'Paddle not configured' }, { status: 500 })
     }
 
-    // Get user from Supabase session if available
     let userId: string | undefined
     const authHeader = req.headers.get('authorization')
     if (authHeader) {
@@ -34,7 +41,7 @@ export async function POST(req: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
 
     const body: Record<string, unknown> = {
-      items: [{ price_id: PRICE_IDS[plan], quantity: 1 }],
+      items: [{ price_id: PRICE_IDS[plan], quantity: qty }],
       checkout: {
         url: `${appUrl}/dashboard?success=true`,
       },

@@ -48,7 +48,7 @@ const TESTIMONIALS = [
 ]
 
 const FAQS_EN = [
-  { q: 'Is my data private?',               a: "Yes. Screenshots go to Google Gemini for analysis and are never stored on our servers." },
+  { q: 'Is my data private?',               a: "Yes. Screenshots are sent to our AI for analysis and are never stored on our servers." },
   { q: 'Which apps does it work with?',     a: "Any app you can screenshot — Tinder, Bumble, Hinge, Instagram DMs, WhatsApp, and more." },
   { q: "What's the free limit?",            a: '3 analyses per day. No card required. Resets at midnight.' },
   { q: 'Does it work in other languages?',  a: 'Yes — FlirtIQ detects the language and replies in the same language automatically.' },
@@ -56,7 +56,7 @@ const FAQS_EN = [
   { q: 'How accurate is the AI?',           a: 'Compatibility scores are a guide, not a guarantee. Replies are suggestions — edit as needed.' },
 ]
 const FAQS_HI = [
-  { q: 'Kya mera data private hai?',        a: "Haan. Screenshots Google Gemini se analyze hoti hain aur hamare servers par store nahi hoti." },
+  { q: 'Kya mera data private hai?',        a: "Haan. Screenshots hamare AI se analyze hoti hain aur hamare servers par store nahi hoti." },
   { q: 'Kaun se apps ke saath kaam karta?', a: "Koi bhi app jisme screenshot le sako — Tinder, Bumble, Hinge, Instagram DMs, WhatsApp, aur zyada." },
   { q: 'Free limit kya hai?',               a: 'Roz 3 analyses. Koi card nahi chahiye. Midnight par reset hoti hai.' },
   { q: 'Kya hindi mein kaam karta?',        a: 'Haan — FlirtIQ language detect karta hai aur usi mein reply deta hai.' },

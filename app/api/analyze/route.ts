@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import { NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase'
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,38 @@ export async function POST(req: Request) {
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
+    }
+
+    // Check subscription or credits if user is authenticated
+    const authHeader = req.headers.get('authorization')
+    let creditsUsed = false
+    if (authHeader) {
+      const supabase = createServerClient()
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+        if (user) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status, credits')
+            .eq('user_id', user.id)
+            .single()
+
+          const isSubscribed = sub?.status === 'active'
+          const credits = sub?.credits ?? 0
+
+          if (!isSubscribed && credits <= 0) {
+            // No subscription and no credits — fall through to free tier (client enforces)
+          } else if (!isSubscribed && credits > 0) {
+            // Deduct 1 credit
+            await supabase
+              .from('subscriptions')
+              .update({ credits: credits - 1 })
+              .eq('user_id', user.id)
+            creditsUsed = true
+          }
+          // If subscribed, no deduction needed
+        }
+      }
     }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -74,7 +107,6 @@ If the image is unclear or not a dating/messaging conversation, still return val
 
     const text = response.choices[0]?.message?.content ?? ''
 
-    // Clean markdown fences if model wraps response
     let cleanedText = text.trim()
     if (cleanedText.startsWith('```')) {
       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
@@ -96,7 +128,7 @@ If the image is unclear or not a dating/messaging conversation, still return val
       throw new Error('Invalid response structure from AI')
     }
 
-    return NextResponse.json(json)
+    return NextResponse.json({ ...json, creditsUsed })
   } catch (error) {
     console.error('Analyze API error:', error)
     const message = error instanceof Error ? error.message : 'Analysis failed'

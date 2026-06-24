@@ -29,3 +29,6 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own subscription" ON public.subscriptions
   FOR SELECT USING (auth.uid() = user_id);
+
+-- Credits system (pay as you go)
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS credits INTEGER NOT NULL DEFAULT 0;

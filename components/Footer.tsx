@@ -14,7 +14,7 @@ export default function Footer() {
               <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
             </Link>
             <p className="text-sm max-w-xs" style={{ color: 'var(--muted-foreground)' }}>
-              Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by Gemini AI.
+              Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by AI.
             </p>
             <div className="flex items-center gap-4 mt-5">
               {[Twitter, Instagram, Github].map((Icon, i) => (
