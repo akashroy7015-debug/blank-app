@@ -19,57 +19,65 @@ export async function POST(req: Request) {
     let creditsUsed = false
     let freeTierCount: number | undefined = undefined
 
+    // Sign-in is mandatory — even free-tier usage requires an account so the
+    // daily limit is tracked server-side and can't be reset by clearing cache.
+    const supabase = createServerClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service not configured' }, { status: 500 })
+    }
+
     const authHeader = req.headers.get('authorization')
-    if (authHeader) {
-      const supabase = createServerClient()
-      if (supabase) {
-        const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-        if (user) {
-          const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('status, credits, free_analyses_count, free_analyses_date')
-            .eq('user_id', user.id)
-            .single()
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Please sign in to use FlirtIQ.' }, { status: 401 })
+    }
 
-          const isSubscribed = sub?.status === 'active'
-          const credits = sub?.credits ?? 0
+    const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (!user) {
+      return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
+    }
 
-          if (isSubscribed) {
-            // Unlimited — no deduction needed
-          } else if (credits > 0) {
-            await supabase
-              .from('subscriptions')
-              .update({ credits: credits - 1 })
-              .eq('user_id', user.id)
-            creditsUsed = true
-          } else {
-            // Free tier — enforce server-side so cache/localStorage clears don't help
-            const today = new Date().toISOString().split('T')[0]
-            const isNewDay = sub?.free_analyses_date !== today
-            const currentCount = isNewDay ? 0 : (sub?.free_analyses_count ?? 0)
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status, credits, free_analyses_count, free_analyses_date')
+      .eq('user_id', user.id)
+      .single()
 
-            if (currentCount >= FREE_LIMIT) {
-              return NextResponse.json(
-                { error: 'Daily free limit reached. Buy credits or upgrade to continue.' },
-                { status: 429 }
-              )
-            }
+    const isSubscribed = sub?.status === 'active'
+    const credits = sub?.credits ?? 0
 
-            const newCount = currentCount + 1
-            if (sub) {
-              await supabase
-                .from('subscriptions')
-                .update({ free_analyses_count: newCount, free_analyses_date: today })
-                .eq('user_id', user.id)
-            } else {
-              await supabase
-                .from('subscriptions')
-                .insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
-            }
-            freeTierCount = newCount
-          }
-        }
+    if (isSubscribed) {
+      // Unlimited — no deduction needed
+    } else if (credits > 0) {
+      await supabase
+        .from('subscriptions')
+        .update({ credits: credits - 1 })
+        .eq('user_id', user.id)
+      creditsUsed = true
+    } else {
+      // Free tier — enforce server-side so cache/localStorage clears don't help
+      const today = new Date().toISOString().split('T')[0]
+      const isNewDay = sub?.free_analyses_date !== today
+      const currentCount = isNewDay ? 0 : (sub?.free_analyses_count ?? 0)
+
+      if (currentCount >= FREE_LIMIT) {
+        return NextResponse.json(
+          { error: 'Daily free limit reached. Buy credits or upgrade to continue.' },
+          { status: 429 }
+        )
       }
+
+      const newCount = currentCount + 1
+      if (sub) {
+        await supabase
+          .from('subscriptions')
+          .update({ free_analyses_count: newCount, free_analyses_date: today })
+          .eq('user_id', user.id)
+      } else {
+        await supabase
+          .from('subscriptions')
+          .insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
+      }
+      freeTierCount = newCount
     }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })

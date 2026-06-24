@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import ImageUploader from '@/components/ImageUploader'
 import AnalysisResult from '@/components/AnalysisResult'
-import { getTodayUsage, incrementUsage, FREE_LIMIT } from '@/lib/usage'
-import { Sparkles, AlertCircle, Crown, Infinity, Coins } from 'lucide-react'
+import { FREE_LIMIT } from '@/lib/usage'
+import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
 
@@ -28,11 +28,9 @@ export default function DashboardPage() {
   const [credits, setCredits] = useState(0)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
-    // For anonymous users, seed the counter from localStorage
-    setUsageCount(getTodayUsage())
-
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
       setSuccessMessage('Payment successful! Your account has been updated.')
@@ -40,9 +38,9 @@ export default function DashboardPage() {
 
     const checkSubscription = async () => {
       const supabase = createBrowserClient()
-      if (!supabase) return
+      if (!supabase) { setAuthChecked(true); return }
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session) { setAuthChecked(true); return }
 
       setAccessToken(session.access_token)
       setIsLoggedIn(true)
@@ -56,10 +54,11 @@ export default function DashboardPage() {
       if (data?.status === 'active') setIsSubscribed(true)
       if ((data?.credits ?? 0) > 0) setCredits(data?.credits ?? 0)
 
-      // Override localStorage counter with authoritative server value
+      // Authoritative server-side count — cache/localStorage can't change it
       const today = new Date().toISOString().split('T')[0]
       const isToday = data?.free_analyses_date === today
       setUsageCount(isToday ? (data?.free_analyses_count ?? 0) : 0)
+      setAuthChecked(true)
     }
     checkSubscription()
   }, [])
@@ -67,8 +66,12 @@ export default function DashboardPage() {
   const handleAnalyze = async () => {
     if (!imageFile) { setError('Please upload a chat screenshot first.'); return }
 
-    // For logged-in users, trust server-side count; for anonymous, trust localStorage
-    const hasAccess = isSubscribed || credits > 0 || (isLoggedIn ? usageCount < FREE_LIMIT : usageCount < FREE_LIMIT)
+    if (!isLoggedIn) {
+      setError('Please sign in or create a free account to analyze your chat.')
+      return
+    }
+
+    const hasAccess = isSubscribed || credits > 0 || usageCount < FREE_LIMIT
     if (!hasAccess) {
       setError('You have used all 3 free analyses for today. Buy credits or upgrade to continue.')
       return
@@ -101,15 +104,9 @@ export default function DashboardPage() {
 
       if (data.creditsUsed) {
         setCredits(c => Math.max(0, c - 1))
-      } else if (!isSubscribed) {
-        if (data.freeTierCount !== undefined) {
-          // Logged-in: use server-authoritative count — cache/localStorage irrelevant
-          setUsageCount(data.freeTierCount)
-        } else {
-          // Anonymous: fall back to localStorage
-          incrementUsage()
-          setUsageCount(getTodayUsage())
-        }
+      } else if (!isSubscribed && data.freeTierCount !== undefined) {
+        // Server-authoritative count — cache/localStorage can't change it
+        setUsageCount(data.freeTierCount)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -161,56 +158,89 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="mb-8 rounded-2xl p-4 flex items-center justify-between"
-          style={isLimitReached
-            ? { background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }
-            : { background: 'var(--card)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center gap-3">
-            {bannerIcon}
-            <div>
-              <p className="font-medium text-sm" style={{ color: isLimitReached ? 'oklch(0.577 0.245 27.325)' : 'var(--foreground)' }}>
-                {bannerText}
-              </p>
-              {!isLimitReached && !isSubscribed && credits === 0 && (
-                <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>
-              )}
+        {!authChecked ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 rounded-full animate-spin"
+              style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+          </div>
+        ) : !isLoggedIn ? (
+          <div className="rounded-3xl p-8 md:p-12 text-center shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'oklch(0.64 0.24 5 / 0.1)' }}>
+              <Lock size={24} style={{ color: 'var(--primary)' }} />
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl mb-3" style={{ color: 'var(--foreground)' }}>
+              Create a free account to start
+            </h2>
+            <p className="text-sm md:text-base mb-7 max-w-md mx-auto" style={{ color: 'var(--muted-foreground)' }}>
+              Sign up free to get <strong>3 analyses every day</strong> — no card required. Your usage and credits stay synced to your account across all your devices.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/auth/signup"
+                className="w-full sm:w-auto rounded-full px-7 py-3 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105"
+                style={{ background: 'var(--gradient-primary)' }}>
+                Sign Up Free
+              </Link>
+              <Link href="/auth/login"
+                className="w-full sm:w-auto rounded-full px-7 py-3 text-sm font-semibold transition-all hover:opacity-80"
+                style={{ background: 'var(--muted)', color: 'var(--foreground)' }}>
+                Log In
+              </Link>
             </div>
           </div>
-          {isLimitReached && (
-            <Link href="/pricing"
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105 shrink-0"
-              style={{ background: 'var(--gradient-primary)' }}>
-              Get Credits
-            </Link>
-          )}
-        </div>
-
-        <div className="rounded-3xl p-6 md:p-8 mb-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-          <ImageUploader setImageFile={setImageFile} setImagePreview={setImagePreview} imagePreview={imagePreview} imageFile={imageFile} />
-
-          {error && (
-            <div className="mt-4 rounded-xl p-4 flex items-center gap-3"
-              style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
-              <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
-              <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
+        ) : (
+          <>
+            <div className="mb-8 rounded-2xl p-4 flex items-center justify-between"
+              style={isLimitReached
+                ? { background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }
+                : { background: 'var(--card)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-3">
+                {bannerIcon}
+                <div>
+                  <p className="font-medium text-sm" style={{ color: isLimitReached ? 'oklch(0.577 0.245 27.325)' : 'var(--foreground)' }}>
+                    {bannerText}
+                  </p>
+                  {!isLimitReached && !isSubscribed && credits === 0 && (
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>
+                  )}
+                </div>
+              </div>
+              {isLimitReached && (
+                <Link href="/pricing"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105 shrink-0"
+                  style={{ background: 'var(--gradient-primary)' }}>
+                  Get Credits
+                </Link>
+              )}
             </div>
-          )}
 
-          <button onClick={handleAnalyze}
-            disabled={!imageFile || isAnalyzing || isLimitReached}
-            className="mt-6 w-full rounded-full py-4 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
-            style={!imageFile || isLimitReached
-              ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
-              : { background: 'var(--gradient-primary)', color: 'white' }}>
-            {isAnalyzing ? (
-              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
-            ) : (
-              <><Sparkles size={19} /> Analyze My Chat</>
-            )}
-          </button>
-        </div>
+            <div className="rounded-3xl p-6 md:p-8 mb-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+              <ImageUploader setImageFile={setImageFile} setImagePreview={setImagePreview} imagePreview={imagePreview} imageFile={imageFile} />
 
-        <AnalysisResult result={result} isLoading={isAnalyzing} />
+              {error && (
+                <div className="mt-4 rounded-xl p-4 flex items-center gap-3"
+                  style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
+                  <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+                  <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
+                </div>
+              )}
+
+              <button onClick={handleAnalyze}
+                disabled={!imageFile || isAnalyzing || isLimitReached}
+                className="mt-6 w-full rounded-full py-4 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={!imageFile || isLimitReached
+                  ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
+                  : { background: 'var(--gradient-primary)', color: 'white' }}>
+                {isAnalyzing ? (
+                  <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
+                ) : (
+                  <><Sparkles size={19} /> Analyze My Chat</>
+                )}
+              </button>
+            </div>
+
+            <AnalysisResult result={result} isLoading={isAnalyzing} />
+          </>
+        )}
       </div>
     </main>
   )
