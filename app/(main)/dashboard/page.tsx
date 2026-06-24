@@ -311,6 +311,7 @@ export default function DashboardPage() {
               <OpenerGenerator
                 accessToken={accessToken}
                 onUsageUpdate={(count) => setUsageCount(count)}
+                onCreditUsed={() => setCredits(c => Math.max(0, c - 1))}
               />
             )}
           </>

@@ -21,11 +21,17 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
     if (!user) return NextResponse.json({ error: 'Session expired. Please sign in again.' }, { status: 401 })
 
-    const { data: sub } = await supabase
+    const { data: sub, error: subError } = await supabase
       .from('subscriptions')
       .select('status, credits, free_analyses_count, free_analyses_date')
       .eq('user_id', user.id)
       .single()
+
+    // A real DB/config error (not just "row not found") — abort
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('Supabase subscription fetch error:', subError)
+      return NextResponse.json({ error: 'Service error. Please try again.' }, { status: 500 })
+    }
 
     const isSubscribed = sub?.status === 'active'
     const credits = sub?.credits ?? 0
@@ -33,22 +39,48 @@ export async function POST(req: Request) {
     let freeTierCount: number | undefined = undefined
 
     if (isSubscribed) {
-      // unlimited
+      // unlimited — no deduction
     } else if (credits > 0) {
-      await supabase.from('subscriptions').update({ credits: credits - 1 }).eq('user_id', user.id)
+      const { error: updateErr } = await supabase
+        .from('subscriptions')
+        .update({ credits: credits - 1 })
+        .eq('user_id', user.id)
+      if (updateErr) {
+        console.error('Credit deduction error:', updateErr)
+        return NextResponse.json({ error: 'Failed to deduct credit. Please try again.' }, { status: 500 })
+      }
       creditsUsed = true
     } else {
+      // Free tier — enforce server-side
       const today = new Date().toISOString().split('T')[0]
       const isNewDay = sub?.free_analyses_date !== today
       const currentCount = isNewDay ? 0 : (sub?.free_analyses_count ?? 0)
+
       if (currentCount >= FREE_LIMIT) {
-        return NextResponse.json({ error: 'Daily free limit reached. Buy credits or upgrade to continue.' }, { status: 429 })
+        return NextResponse.json(
+          { error: 'Daily free limit reached. Buy credits or upgrade to continue.' },
+          { status: 429 }
+        )
       }
+
       const newCount = currentCount + 1
       if (sub) {
-        await supabase.from('subscriptions').update({ free_analyses_count: newCount, free_analyses_date: today }).eq('user_id', user.id)
+        const { error: updateErr } = await supabase
+          .from('subscriptions')
+          .update({ free_analyses_count: newCount, free_analyses_date: today })
+          .eq('user_id', user.id)
+        if (updateErr) {
+          console.error('Free tier update error:', updateErr)
+          return NextResponse.json({ error: 'Failed to track usage. Please try again.' }, { status: 500 })
+        }
       } else {
-        await supabase.from('subscriptions').insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
+        const { error: insertErr } = await supabase
+          .from('subscriptions')
+          .insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
+        if (insertErr) {
+          console.error('Free tier insert error:', insertErr)
+          return NextResponse.json({ error: 'Failed to track usage. Please try again.' }, { status: 500 })
+        }
       }
       freeTierCount = newCount
     }

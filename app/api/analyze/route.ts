@@ -36,11 +36,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 })
     }
 
-    const { data: sub } = await supabase
+    const { data: sub, error: subError } = await supabase
       .from('subscriptions')
       .select('status, credits, free_analyses_count, free_analyses_date')
       .eq('user_id', user.id)
       .single()
+
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('Supabase subscription fetch error:', subError)
+      return NextResponse.json({ error: 'Service error. Please try again.' }, { status: 500 })
+    }
 
     const isSubscribed = sub?.status === 'active'
     const credits = sub?.credits ?? 0
@@ -48,10 +53,14 @@ export async function POST(req: Request) {
     if (isSubscribed) {
       // Unlimited — no deduction needed
     } else if (credits > 0) {
-      await supabase
+      const { error: updateErr } = await supabase
         .from('subscriptions')
         .update({ credits: credits - 1 })
         .eq('user_id', user.id)
+      if (updateErr) {
+        console.error('Credit deduction error:', updateErr)
+        return NextResponse.json({ error: 'Failed to deduct credit. Please try again.' }, { status: 500 })
+      }
       creditsUsed = true
     } else {
       // Free tier — enforce server-side so cache/localStorage clears don't help
@@ -68,14 +77,22 @@ export async function POST(req: Request) {
 
       const newCount = currentCount + 1
       if (sub) {
-        await supabase
+        const { error: updateErr } = await supabase
           .from('subscriptions')
           .update({ free_analyses_count: newCount, free_analyses_date: today })
           .eq('user_id', user.id)
+        if (updateErr) {
+          console.error('Free tier update error:', updateErr)
+          return NextResponse.json({ error: 'Failed to track usage. Please try again.' }, { status: 500 })
+        }
       } else {
-        await supabase
+        const { error: insertErr } = await supabase
           .from('subscriptions')
           .insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
+        if (insertErr) {
+          console.error('Free tier insert error:', insertErr)
+          return NextResponse.json({ error: 'Failed to track usage. Please try again.' }, { status: 500 })
+        }
       }
       freeTierCount = newCount
     }
