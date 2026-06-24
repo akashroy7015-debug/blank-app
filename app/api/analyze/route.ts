@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import OpenAI from 'openai'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
@@ -9,12 +9,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 })
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
     const prompt = `You are FlirtIQ — an expert AI dating coach serving users in 29 languages worldwide. Analyze this chat screenshot and respond with ONLY valid JSON (no markdown, no code blocks) in this exact format:
 
@@ -51,19 +50,31 @@ Always match tone, formality, and cultural nuance of the original conversation e
 
 If the image is unclear or not a dating/messaging conversation, still return valid JSON with helpful general replies in English and a compatibilityScore of 50.`
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          mimeType: mimeType || 'image/jpeg',
-          data: imageBase64,
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType || 'image/jpeg'};base64,${imageBase64}`,
+              },
+            },
+            {
+              type: 'text',
+              text: prompt,
+            },
+          ],
         },
-      },
-      prompt,
-    ])
+      ],
+      max_tokens: 1000,
+    })
 
-    const text = result.response.text()
+    const text = response.choices[0]?.message?.content ?? ''
 
-    // Clean markdown fences if Gemini wraps response
+    // Clean markdown fences if model wraps response
     let cleanedText = text.trim()
     if (cleanedText.startsWith('```')) {
       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
