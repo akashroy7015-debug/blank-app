@@ -7,6 +7,7 @@ import { createBrowserClient } from '@/lib/supabase'
 import { Menu, X, LogOut, User } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { useLanguage } from '@/lib/language'
+import Logo from '@/components/Logo'
 
 export default function Navbar() {
   const router = useRouter()
@@ -52,8 +53,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl text-sm text-white shadow-pill"
-              style={{ background: 'var(--gradient-primary)' }}>💗</span>
+            <Logo size={32} className="shadow-pill rounded-[9px]" />
             <span className="text-lg font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
           </Link>
 
@@ -67,6 +67,7 @@ export default function Navbar() {
           {/* Language toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+            aria-label={lang === 'en' ? 'Switch to Hindi' : 'Switch to English'}
             className="hidden md:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
           >
@@ -110,6 +111,8 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
             className="md:hidden hover:opacity-70 transition-opacity"
             style={{ color: 'var(--muted-foreground)' }}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

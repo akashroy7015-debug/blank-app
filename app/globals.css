@@ -11,7 +11,7 @@
 /* Dark scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #12121f; }
-::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #E8395A; border-radius: 3px; }
 
 /* Dashboard animations */
 @keyframes progress-fill {
@@ -29,26 +29,28 @@
 /* ─── Landing page light theme ─── */
 .landing-page {
   --radius: 1rem;
-  --background: oklch(0.985 0.005 60);
-  --foreground: oklch(0.18 0.03 340);
+  /* Palette tuned to the FlirtIQ logo gradient (#E8395A → #FF6B5E) */
+  --background: oklch(0.985 0.008 30);
+  --foreground: oklch(0.18 0.03 20);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.03 340);
+  --card-foreground: oklch(0.18 0.03 20);
   --primary: oklch(0.64 0.24 5);
   --primary-foreground: oklch(0.99 0.005 0);
-  --primary-glow: oklch(0.72 0.22 15);
-  --muted: oklch(0.96 0.015 60);
-  --muted-foreground: oklch(0.5 0.03 340);
-  --accent: oklch(0.92 0.06 60);
-  --border: oklch(0.92 0.015 340);
+  --primary-glow: oklch(0.72 0.18 30);
+  --muted: oklch(0.96 0.018 35);
+  --muted-foreground: oklch(0.5 0.04 20);
+  --accent: oklch(0.92 0.07 35);
+  --border: oklch(0.92 0.02 25);
 
+  /* Warm aurora drawn only from the logo's pink → coral → peach range */
   --gradient-aurora: linear-gradient(135deg,
-    oklch(0.95 0.04 290) 0%,
-    oklch(0.97 0.03 340) 35%,
-    oklch(0.96 0.05 60) 70%,
-    oklch(0.95 0.06 30) 100%);
+    oklch(0.97 0.035 10) 0%,
+    oklch(0.97 0.045 25) 35%,
+    oklch(0.96 0.05 45) 70%,
+    oklch(0.97 0.035 15) 100%);
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
   --shadow-soft: 0 10px 40px -10px oklch(0.64 0.24 5 / 0.18);
-  --shadow-card: 0 24px 60px -20px oklch(0.4 0.1 340 / 0.18);
+  --shadow-card: 0 24px 60px -20px oklch(0.45 0.12 20 / 0.18);
   --shadow-pill: 0 8px 24px -8px oklch(0.64 0.24 5 / 0.35);
 
   font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -94,3 +96,48 @@
 .shadow-card  { box-shadow: var(--shadow-card); }
 .shadow-pill  { box-shadow: var(--shadow-pill); }
 .bg-gradient-primary { background-image: var(--gradient-primary); }
+
+/* ─── Accessibility ─── */
+
+/* Visible keyboard focus ring for all interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #E8395A;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Screen-reader-only helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect users who prefer reduced motion: stop decorative animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float-up,
+  .animate-float-soft,
+  .animate-marquee,
+  .animate-pulse-glow {
+    animation: none !important;
+  }
+}

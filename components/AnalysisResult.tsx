@@ -40,6 +40,7 @@ function CopyButton({ text }: { text: string }) {
     <button onClick={handleCopy}
       className="p-1.5 rounded-lg transition-all hover:opacity-70"
       style={{ color: 'var(--muted-foreground)' }}
+      aria-label={copied ? 'Copied to clipboard' : 'Copy reply to clipboard'}
       title="Copy to clipboard">
       {copied ? <Check size={14} style={{ color: 'oklch(0.6 0.18 160)' }} /> : <Copy size={14} />}
     </button>
@@ -79,7 +80,9 @@ function ScoreBar({ score }: { score: number }) {
           {displayScore}%
         </div>
       </div>
-      <div className="w-full rounded-full h-3 overflow-hidden" style={{ background: 'var(--muted)' }}>
+      <div className="w-full rounded-full h-3 overflow-hidden" style={{ background: 'var(--muted)' }}
+        role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100}
+        aria-label={`Compatibility score: ${score} percent`}>
         <div className={`h-full rounded-full bg-gradient-to-r ${scoreGradient}`}
           style={{ width: `${width}%`, transition: 'width 0.05s linear' }} />
       </div>
