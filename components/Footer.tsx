@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Twitter, Instagram, Github } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 export default function Footer() {
   return (
@@ -9,8 +10,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-3">
-              <span className="grid h-8 w-8 place-items-center rounded-xl text-sm text-white shadow-pill"
-                style={{ background: 'var(--gradient-primary)' }}>💗</span>
+              <Logo size={32} className="shadow-pill rounded-[9px]" />
               <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
             </Link>
             <p className="text-sm max-w-xs" style={{ color: 'var(--muted-foreground)' }}>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -48,8 +49,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl text-lg text-white shadow-pill"
-              style={{ background: 'var(--gradient-primary)' }}>💗</span>
+            <Logo size={40} className="shadow-pill rounded-xl" />
             <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
           </Link>
           <h1 className="font-display text-3xl mb-2" style={{ color: 'var(--foreground)' }}>Welcome back</h1>

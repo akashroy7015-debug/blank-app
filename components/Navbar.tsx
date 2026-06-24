@@ -7,6 +7,7 @@ import { createBrowserClient } from '@/lib/supabase'
 import { Menu, X, LogOut, User } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { useLanguage } from '@/lib/language'
+import Logo from '@/components/Logo'
 
 export default function Navbar() {
   const router = useRouter()
@@ -52,8 +53,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl text-sm text-white shadow-pill"
-              style={{ background: 'var(--gradient-primary)' }}>💗</span>
+            <Logo size={32} className="shadow-pill rounded-[9px]" />
             <span className="text-lg font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
           </Link>
 

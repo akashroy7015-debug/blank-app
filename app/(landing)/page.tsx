@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useLanguage } from '@/lib/language'
+import Logo from '@/components/Logo'
 
 const HEARTS = ['💌', '💕', '✨', '💬', '❤️', '💗', '🌷', '🫶']
 
@@ -97,7 +98,7 @@ export default function LandingPage() {
       <header className="relative z-20">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link href="/" className="flex items-center gap-2">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl text-lg text-white shadow-pill" style={{ background: 'var(--gradient-primary)' }}>💗</span>
+            <Logo size={40} className="shadow-pill rounded-xl" />
             <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
           </Link>
 
@@ -561,7 +562,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="grid h-8 w-8 place-items-center rounded-xl text-base text-white" style={{ background: 'var(--gradient-primary)' }}>💗</span>
+                <Logo size={32} className="rounded-[9px]" />
                 <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
               </div>
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
