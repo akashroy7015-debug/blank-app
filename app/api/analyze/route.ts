@@ -2,6 +2,8 @@ import OpenAI from 'openai'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 
+const FREE_LIMIT = 3
+
 export async function POST(req: Request) {
   try {
     const { imageBase64, mimeType } = await req.json()
@@ -14,9 +16,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
     }
 
-    // Check subscription or credits if user is authenticated
-    const authHeader = req.headers.get('authorization')
     let creditsUsed = false
+    let freeTierCount: number | undefined = undefined
+
+    const authHeader = req.headers.get('authorization')
     if (authHeader) {
       const supabase = createServerClient()
       if (supabase) {
@@ -24,24 +27,47 @@ export async function POST(req: Request) {
         if (user) {
           const { data: sub } = await supabase
             .from('subscriptions')
-            .select('status, credits')
+            .select('status, credits, free_analyses_count, free_analyses_date')
             .eq('user_id', user.id)
             .single()
 
           const isSubscribed = sub?.status === 'active'
           const credits = sub?.credits ?? 0
 
-          if (!isSubscribed && credits <= 0) {
-            // No subscription and no credits — fall through to free tier (client enforces)
-          } else if (!isSubscribed && credits > 0) {
-            // Deduct 1 credit
+          if (isSubscribed) {
+            // Unlimited — no deduction needed
+          } else if (credits > 0) {
             await supabase
               .from('subscriptions')
               .update({ credits: credits - 1 })
               .eq('user_id', user.id)
             creditsUsed = true
+          } else {
+            // Free tier — enforce server-side so cache/localStorage clears don't help
+            const today = new Date().toISOString().split('T')[0]
+            const isNewDay = sub?.free_analyses_date !== today
+            const currentCount = isNewDay ? 0 : (sub?.free_analyses_count ?? 0)
+
+            if (currentCount >= FREE_LIMIT) {
+              return NextResponse.json(
+                { error: 'Daily free limit reached. Buy credits or upgrade to continue.' },
+                { status: 429 }
+              )
+            }
+
+            const newCount = currentCount + 1
+            if (sub) {
+              await supabase
+                .from('subscriptions')
+                .update({ free_analyses_count: newCount, free_analyses_date: today })
+                .eq('user_id', user.id)
+            } else {
+              await supabase
+                .from('subscriptions')
+                .insert({ user_id: user.id, status: 'inactive', credits: 0, free_analyses_count: newCount, free_analyses_date: today })
+            }
+            freeTierCount = newCount
           }
-          // If subscribed, no deduction needed
         }
       }
     }
@@ -128,7 +154,7 @@ If the image is unclear or not a dating/messaging conversation, still return val
       throw new Error('Invalid response structure from AI')
     }
 
-    return NextResponse.json({ ...json, creditsUsed })
+    return NextResponse.json({ ...json, creditsUsed, freeTierCount })
   } catch (error) {
     console.error('Analyze API error:', error)
     const message = error instanceof Error ? error.message : 'Analysis failed'

@@ -32,3 +32,7 @@ CREATE POLICY "Users can view own subscription" ON public.subscriptions
 
 -- Credits system (pay as you go)
 ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS credits INTEGER NOT NULL DEFAULT 0;
+
+-- Server-side free tier tracking (prevents localStorage/cache reset abuse)
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS free_analyses_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS free_analyses_date DATE;

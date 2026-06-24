@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import ImageUploader from '@/components/ImageUploader'
 import AnalysisResult from '@/components/AnalysisResult'
-import { getTodayUsage, incrementUsage, canUseFreeTier, FREE_LIMIT } from '@/lib/usage'
+import { getTodayUsage, incrementUsage, FREE_LIMIT } from '@/lib/usage'
 import { Sparkles, AlertCircle, Crown, Infinity, Coins } from 'lucide-react'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
@@ -13,6 +13,7 @@ interface AnalysisResultData {
   compatibilityScore: number
   strategyNote: string
   creditsUsed?: boolean
+  freeTierCount?: number
 }
 
 export default function DashboardPage() {
@@ -26,9 +27,12 @@ export default function DashboardPage() {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [credits, setCredits] = useState(0)
   const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
+    // For anonymous users, seed the counter from localStorage
     setUsageCount(getTodayUsage())
+
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
       setSuccessMessage('Payment successful! Your account has been updated.')
@@ -39,25 +43,37 @@ export default function DashboardPage() {
       if (!supabase) return
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+
       setAccessToken(session.access_token)
+      setIsLoggedIn(true)
+
       const { data } = await supabase
         .from('subscriptions')
-        .select('status, credits')
+        .select('status, credits, free_analyses_count, free_analyses_date')
         .eq('user_id', session.user.id)
         .single()
+
       if (data?.status === 'active') setIsSubscribed(true)
       if ((data?.credits ?? 0) > 0) setCredits(data?.credits ?? 0)
+
+      // Override localStorage counter with authoritative server value
+      const today = new Date().toISOString().split('T')[0]
+      const isToday = data?.free_analyses_date === today
+      setUsageCount(isToday ? (data?.free_analyses_count ?? 0) : 0)
     }
     checkSubscription()
   }, [])
 
   const handleAnalyze = async () => {
     if (!imageFile) { setError('Please upload a chat screenshot first.'); return }
-    const hasAccess = isSubscribed || credits > 0 || canUseFreeTier()
+
+    // For logged-in users, trust server-side count; for anonymous, trust localStorage
+    const hasAccess = isSubscribed || credits > 0 || (isLoggedIn ? usageCount < FREE_LIMIT : usageCount < FREE_LIMIT)
     if (!hasAccess) {
       setError('You have used all 3 free analyses for today. Buy credits or upgrade to continue.')
       return
     }
+
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
@@ -82,11 +98,18 @@ export default function DashboardPage() {
       }
       const data = await response.json()
       setResult(data)
+
       if (data.creditsUsed) {
         setCredits(c => Math.max(0, c - 1))
       } else if (!isSubscribed) {
-        incrementUsage()
-        setUsageCount(getTodayUsage())
+        if (data.freeTierCount !== undefined) {
+          // Logged-in: use server-authoritative count — cache/localStorage irrelevant
+          setUsageCount(data.freeTierCount)
+        } else {
+          // Anonymous: fall back to localStorage
+          incrementUsage()
+          setUsageCount(getTodayUsage())
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -96,7 +119,7 @@ export default function DashboardPage() {
   }
 
   const remaining = FREE_LIMIT - usageCount
-  const isLimitReached = !isSubscribed && credits === 0 && !canUseFreeTier()
+  const isLimitReached = !isSubscribed && credits === 0 && usageCount >= FREE_LIMIT
 
   const bannerIcon = isLimitReached
     ? <AlertCircle size={19} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
