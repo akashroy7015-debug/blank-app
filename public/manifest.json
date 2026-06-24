@@ -13,24 +13,44 @@
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "screenshots": [
+  "shortcuts": [
     {
-      "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "FlirtIQ Dashboard"
+      "name": "Analyze Chat",
+      "short_name": "Analyze",
+      "description": "Upload a screenshot and get perfect replies",
+      "url": "/dashboard?mode=analyze",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Write Opener",
+      "short_name": "Opener",
+      "description": "Generate opening lines for a new match",
+      "url": "/dashboard?mode=opener",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "categories": ["lifestyle", "social", "utilities"],
-  "lang": "en"
+  "lang": "en",
+  "prefer_related_applications": false
 }

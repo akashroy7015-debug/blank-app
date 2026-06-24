@@ -44,6 +44,9 @@ export default function DashboardPage() {
     if (params.get('success') === 'true') {
       setSuccessMessage('Payment successful! Your account has been updated.')
     }
+    if (params.get('mode') === 'opener') {
+      setMode('opener')
+    }
 
     const checkSubscription = async () => {
       const supabase = createBrowserClient()
@@ -311,6 +314,7 @@ export default function DashboardPage() {
               <OpenerGenerator
                 accessToken={accessToken}
                 onUsageUpdate={(count) => setUsageCount(count)}
+                onCreditUsed={() => setCredits(c => Math.max(0, c - 1))}
               />
             )}
           </>

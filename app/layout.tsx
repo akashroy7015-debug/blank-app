@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { LanguageProvider } from '@/lib/language'
+import InstallBanner from '@/components/InstallBanner'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blank-app-gules.vercel.app'
 const TITLE = 'FlirtIQ — Write the perfect message.'
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LanguageProvider>
           {children}
+          <InstallBanner />
         </LanguageProvider>
       </body>
     </html>

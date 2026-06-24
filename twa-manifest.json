@@ -1,0 +1,53 @@
+{
+  "packageId": "app.flirtiq.twa",
+  "host": "blank-app-gules.vercel.app",
+  "name": "FlirtIQ",
+  "launcherName": "FlirtIQ",
+  "display": "standalone",
+  "themeColor": "#E8395A",
+  "navigationColor": "#E8395A",
+  "navigationColorDark": "#E8395A",
+  "navigationDividerColor": "#E8395A",
+  "navigationDividerColorDark": "#E8395A",
+  "backgroundColor": "#FFF8F2",
+  "enableNotifications": false,
+  "startUrl": "/dashboard",
+  "iconUrl": "https://blank-app-gules.vercel.app/icon-512.png",
+  "maskableIconUrl": "https://blank-app-gules.vercel.app/icon-512.png",
+  "monochromeIconUrl": "https://blank-app-gules.vercel.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./flirtiq.keystore",
+    "alias": "flirtiq"
+  },
+  "appVersionCode": 1,
+  "appVersion": "1.0.0",
+  "shortcuts": [
+    {
+      "name": "Analyze Chat",
+      "shortName": "Analyze",
+      "url": "/dashboard?mode=analyze",
+      "icons": [{ "src": "https://blank-app-gules.vercel.app/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Write Opener",
+      "shortName": "Opener",
+      "url": "/dashboard?mode=opener",
+      "icons": [{ "src": "https://blank-app-gules.vercel.app/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://blank-app-gules.vercel.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": { "enabled": false },
+    "playBilling": { "enabled": false }
+  },
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://blank-app-gules.vercel.app/",
+  "minSdkVersion": 19,
+  "orientation": "portrait"
+}

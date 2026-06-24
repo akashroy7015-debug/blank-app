@@ -33,9 +33,10 @@ function CopyBtn({ text }: { text: string }) {
 interface Props {
   accessToken: string | null
   onUsageUpdate: (count: number) => void
+  onCreditUsed: () => void
 }
 
-export default function OpenerGenerator({ accessToken, onUsageUpdate }: Props) {
+export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUsed }: Props) {
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
   const [bio, setBio] = useState('')
@@ -67,7 +68,8 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate }: Props) {
       }
       const data = await res.json()
       setResult(data)
-      if (data.freeTierCount !== undefined) onUsageUpdate(data.freeTierCount)
+      if (data.creditsUsed) onCreditUsed()
+      else if (data.freeTierCount !== undefined) onUsageUpdate(data.freeTierCount)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
