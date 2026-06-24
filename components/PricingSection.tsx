@@ -62,7 +62,7 @@ export default function PricingSection() {
   const handleCheckout = async (plan: string) => {
     setLoadingPlan(plan)
     try {
-      const res = await fetch('/api/lemonsqueezy/checkout', {
+      const res = await fetch('/api/paddle/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),

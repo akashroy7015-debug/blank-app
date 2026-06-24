@@ -64,13 +64,13 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">6. Paid Subscriptions</h2>
             <p>
-              FlirtIQ offers paid subscription plans (Weekly, Monthly, Yearly) that provide unlimited analyses. Subscriptions are billed through <strong className="">Lemon Squeezy</strong>, our payment processor and Merchant of Record. By purchasing a subscription, you agree to Lemon Squeezy&apos;s terms at <a href="https://www.lemonsqueezy.com/terms" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{color:"var(--primary)"}}>lemonsqueezy.com/terms</a>.
+              FlirtIQ offers paid subscription plans (Weekly, Monthly, Yearly) that provide unlimited analyses. Subscriptions are billed through <strong className="">Paddle</strong>, our payment processor and Merchant of Record. By purchasing a subscription, you agree to Paddle&apos;s terms at <a href="https://www.paddle.com/legal/terms" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{color:"var(--primary)"}}>paddle.com/legal/terms</a>.
             </p>
             <ul className="list-disc list-inside mt-3 space-y-2">
               <li><strong className="">Billing:</strong> Subscriptions renew automatically at the end of each billing period (weekly, monthly, or yearly) until cancelled.</li>
               <li><strong className="">Cancellation:</strong> You may cancel at any time through your account or by contacting us. Cancellation takes effect at the end of the current billing period. You retain access until then.</li>
               <li><strong className="">Price changes:</strong> We will notify you at least 14 days before any price change. Continuing to use the Service after the change constitutes acceptance.</li>
-              <li><strong className="">Taxes:</strong> Lemon Squeezy, as Merchant of Record, handles all applicable taxes (GST, VAT, sales tax) globally.</li>
+              <li><strong className="">Taxes:</strong> Paddle, as Merchant of Record, handles all applicable taxes (GST, VAT, sales tax) globally.</li>
             </ul>
           </section>
 
