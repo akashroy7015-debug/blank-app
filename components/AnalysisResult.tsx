@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Copy, Check, Lightbulb, LucideIcon, Heart, Zap, Flame, Sparkles } from 'lucide-react'
+import { Copy, Check, Lightbulb, LucideIcon, Heart, Zap, Flame, Sparkles, RefreshCw, CopyCheck } from 'lucide-react'
 
 interface AnalysisResultData {
   replies: { aura: string; cool: string; bold: string; gentleman: string }
@@ -16,6 +16,12 @@ interface ReplyCard {
   bgGradient: string
   borderColor: string
   iconColor: string
+}
+
+interface AnalysisResultProps {
+  result: AnalysisResultData | null
+  isLoading: boolean
+  onRegenerate?: (key: string) => Promise<string | null>
 }
 
 const replyCards: ReplyCard[] = [
@@ -105,30 +111,87 @@ function LoadingSkeleton() {
   )
 }
 
-export default function AnalysisResult({ result, isLoading }: { result: AnalysisResultData | null; isLoading: boolean }) {
+export default function AnalysisResult({ result, isLoading, onRegenerate }: AnalysisResultProps) {
+  const [replies, setReplies] = useState<AnalysisResultData['replies'] | null>(null)
+  const [regeneratingKey, setRegeneratingKey] = useState<string | null>(null)
+  const [copiedAll, setCopiedAll] = useState(false)
+
+  useEffect(() => {
+    if (result) setReplies(result.replies)
+  }, [result])
+
   if (isLoading) return <LoadingSkeleton />
-  if (!result) return null
+  if (!result || !replies) return null
+
+  const handleRegenerate = async (key: string) => {
+    if (!onRegenerate || regeneratingKey) return
+    setRegeneratingKey(key)
+    try {
+      const newReply = await onRegenerate(key)
+      if (newReply) {
+        setReplies(prev => prev ? { ...prev, [key]: newReply } : prev)
+      }
+    } finally {
+      setRegeneratingKey(null)
+    }
+  }
+
+  const handleCopyAll = async () => {
+    const allReplies = replyCards.map(c => `${c.label}: "${replies[c.key]}"`).join('\n\n')
+    try {
+      await navigator.clipboard.writeText(allReplies)
+      setCopiedAll(true)
+      setTimeout(() => setCopiedAll(false), 2000)
+    } catch { /* noop */ }
+  }
 
   return (
     <div className="space-y-6">
       {/* Reply Cards */}
       <div>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>Your 4 Perfect Replies</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>Your 4 Perfect Replies</h2>
+          <button
+            onClick={handleCopyAll}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all hover:opacity-80"
+            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)', background: 'var(--card)' }}
+            aria-label={copiedAll ? 'All replies copied' : 'Copy all replies to clipboard'}>
+            {copiedAll
+              ? <><CopyCheck size={12} style={{ color: 'oklch(0.6 0.18 160)' }} /><span style={{ color: 'oklch(0.6 0.18 160)' }}>Copied!</span></>
+              : <><Copy size={12} />Copy All</>}
+          </button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {replyCards.map((card) => {
             const Icon = card.icon
+            const isRegenerating = regeneratingKey === card.key
             return (
-              <div key={card.key} className={`rounded-2xl p-5 bg-gradient-to-br ${card.bgGradient}`}
+              <div key={card.key} className={`rounded-2xl p-5 bg-gradient-to-br ${card.bgGradient} transition-opacity ${isRegenerating ? 'opacity-60' : ''}`}
                 style={{ border: `1px solid ${card.borderColor}` }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Icon size={15} style={{ color: card.iconColor }} />
                     <span className="text-xs font-bold uppercase tracking-wide" style={{ color: card.iconColor }}>{card.label}</span>
                   </div>
-                  <CopyButton text={result.replies[card.key]} />
+                  <div className="flex items-center gap-1">
+                    {onRegenerate && (
+                      <button
+                        onClick={() => handleRegenerate(card.key)}
+                        disabled={!!regeneratingKey}
+                        className="p-1.5 rounded-lg transition-all hover:opacity-70 disabled:cursor-not-allowed"
+                        style={{ color: 'var(--muted-foreground)' }}
+                        aria-label={`Regenerate ${card.label} reply`}
+                        title="Get a different reply">
+                        <RefreshCw size={13} className={isRegenerating ? 'animate-spin' : ''} />
+                      </button>
+                    )}
+                    <CopyButton text={replies[card.key]} />
+                  </div>
                 </div>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>
-                  &ldquo;{result.replies[card.key]}&rdquo;
+                  {isRegenerating
+                    ? <span className="italic" style={{ color: 'var(--muted-foreground)' }}>Getting a fresh reply…</span>
+                    : <>&ldquo;{replies[card.key]}&rdquo;</>}
                 </p>
               </div>
             )

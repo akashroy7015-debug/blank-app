@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react'
 import ImageUploader from '@/components/ImageUploader'
 import AnalysisResult from '@/components/AnalysisResult'
+import OpenerGenerator from '@/components/OpenerGenerator'
 import { FREE_LIMIT } from '@/lib/usage'
-import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock } from 'lucide-react'
+import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock, ImageIcon, MessageSquarePlus, Camera } from 'lucide-react'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
+
+type Mode = 'analyze' | 'opener'
 
 interface AnalysisResultData {
   replies: { aura: string; cool: string; bold: string; gentleman: string }
@@ -15,6 +18,9 @@ interface AnalysisResultData {
   creditsUsed?: boolean
   freeTierCount?: number
 }
+
+// Sample demo image URL — a public placeholder chat screenshot for first-time users
+const SAMPLE_HINT = 'Try uploading any chat screenshot from Tinder, Bumble, Hinge, Instagram DMs, or WhatsApp.'
 
 export default function DashboardPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -27,8 +33,11 @@ export default function DashboardPage() {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [credits, setCredits] = useState(0)
   const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [imageBase64, setImageBase64] = useState<string | null>(null)
+  const [imageMime, setImageMime] = useState<string>('image/jpeg')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [mode, setMode] = useState<Mode>('analyze')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -54,7 +63,6 @@ export default function DashboardPage() {
       if (data?.status === 'active') setIsSubscribed(true)
       if ((data?.credits ?? 0) > 0) setCredits(data?.credits ?? 0)
 
-      // Authoritative server-side count — cache/localStorage can't change it
       const today = new Date().toISOString().split('T')[0]
       const isToday = data?.free_analyses_date === today
       setUsageCount(isToday ? (data?.free_analyses_count ?? 0) : 0)
@@ -62,6 +70,14 @@ export default function DashboardPage() {
     }
     checkSubscription()
   }, [])
+
+  const getBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+    })
 
   const handleAnalyze = async () => {
     if (!imageFile) { setError('Please upload a chat screenshot first.'); return }
@@ -81,19 +97,18 @@ export default function DashboardPage() {
     setError(null)
     setResult(null)
     try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(imageFile)
-        reader.onload = () => resolve(reader.result as string)
-        reader.onerror = reject
-      })
+      const base64Full = await getBase64(imageFile)
+      const b64 = base64Full.split(',')[1]
+      setImageBase64(b64)
+      setImageMime(imageFile.type)
+
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ imageBase64: base64.split(',')[1], mimeType: imageFile.type }),
+        body: JSON.stringify({ imageBase64: b64, mimeType: imageFile.type }),
       })
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
@@ -105,13 +120,28 @@ export default function DashboardPage() {
       if (data.creditsUsed) {
         setCredits(c => Math.max(0, c - 1))
       } else if (!isSubscribed && data.freeTierCount !== undefined) {
-        // Server-authoritative count — cache/localStorage can't change it
         setUsageCount(data.freeTierCount)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setIsAnalyzing(false)
+    }
+  }
+
+  const handleRegenerate = async (key: string): Promise<string | null> => {
+    if (!imageBase64 || !accessToken) return null
+    try {
+      const response = await fetch('/api/analyze/regenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify({ imageBase64, mimeType: imageMime, style: key }),
+      })
+      if (!response.ok) return null
+      const data = await response.json()
+      return data.reply ?? null
+    } catch {
+      return null
     }
   }
 
@@ -143,11 +173,35 @@ export default function DashboardPage() {
             <Sparkles size={14} /> AI Dating Coach
           </div>
           <h1 className="font-display text-4xl md:text-5xl mb-4" style={{ color: 'var(--foreground)' }}>
-            Analyze Your <span className="italic" style={{ color: 'var(--primary)' }}>Chat</span>
+            {mode === 'analyze'
+              ? <>Analyze Your <span className="italic" style={{ color: 'var(--primary)' }}>Chat</span></>
+              : <>Write an <span className="italic" style={{ color: 'var(--primary)' }}>Opener</span></>}
           </h1>
-          <p className="text-lg" style={{ color: 'var(--muted-foreground)' }}>
-            Upload a screenshot to get 4 perfect replies, a compatibility score, and expert strategy
+          <p className="text-lg mb-6" style={{ color: 'var(--muted-foreground)' }}>
+            {mode === 'analyze'
+              ? 'Upload a screenshot to get 4 perfect replies, a compatibility score, and expert strategy'
+              : "Describe your match's profile and get 4 personalized opening lines — no screenshot needed"}
           </p>
+
+          {/* Mode switcher */}
+          <div className="inline-flex rounded-2xl p-1 gap-1" style={{ background: 'var(--muted)' }}>
+            <button
+              onClick={() => setMode('analyze')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={mode === 'analyze'
+                ? { background: 'white', color: 'var(--foreground)', boxShadow: '0 2px 8px oklch(0 0 0 / 0.1)' }
+                : { color: 'var(--muted-foreground)' }}>
+              <Camera size={15} /> Analyze Chat
+            </button>
+            <button
+              onClick={() => setMode('opener')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={mode === 'opener'
+                ? { background: 'white', color: 'var(--foreground)', boxShadow: '0 2px 8px oklch(0 0 0 / 0.1)' }
+                : { color: 'var(--muted-foreground)' }}>
+              <MessageSquarePlus size={15} /> Write Opener
+            </button>
+          </div>
         </div>
 
         {successMessage && (
@@ -213,32 +267,52 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="rounded-3xl p-6 md:p-8 mb-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-              <ImageUploader setImageFile={setImageFile} setImagePreview={setImagePreview} imagePreview={imagePreview} imageFile={imageFile} />
+            {mode === 'analyze' ? (
+              <>
+                <div className="rounded-3xl p-6 md:p-8 mb-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                  <ImageUploader setImageFile={setImageFile} setImagePreview={setImagePreview} imagePreview={imagePreview} imageFile={imageFile} />
 
-              {error && (
-                <div className="mt-4 rounded-xl p-4 flex items-center gap-3"
-                  style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
-                  <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
-                  <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
+                  {!imageFile && !result && (
+                    <div className="mt-4 flex items-start gap-2">
+                      <ImageIcon size={14} style={{ color: 'var(--muted-foreground)', flexShrink: 0, marginTop: 2 }} />
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{SAMPLE_HINT}</p>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="mt-4 rounded-xl p-4 flex items-center gap-3"
+                      style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
+                      <AlertCircle size={17} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+                      <p className="text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>{error}</p>
+                    </div>
+                  )}
+
+                  <button onClick={handleAnalyze}
+                    disabled={!imageFile || isAnalyzing || isLimitReached}
+                    className="mt-6 w-full rounded-full py-4 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={!imageFile || isLimitReached
+                      ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
+                      : { background: 'var(--gradient-primary)', color: 'white' }}>
+                    {isAnalyzing ? (
+                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
+                    ) : (
+                      <><Sparkles size={19} /> Analyze My Chat</>
+                    )}
+                  </button>
                 </div>
-              )}
 
-              <button onClick={handleAnalyze}
-                disabled={!imageFile || isAnalyzing || isLimitReached}
-                className="mt-6 w-full rounded-full py-4 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-pill hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={!imageFile || isLimitReached
-                  ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
-                  : { background: 'var(--gradient-primary)', color: 'white' }}>
-                {isAnalyzing ? (
-                  <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
-                ) : (
-                  <><Sparkles size={19} /> Analyze My Chat</>
-                )}
-              </button>
-            </div>
-
-            <AnalysisResult result={result} isLoading={isAnalyzing} />
+                <AnalysisResult
+                  result={result}
+                  isLoading={isAnalyzing}
+                  onRegenerate={result ? handleRegenerate : undefined}
+                />
+              </>
+            ) : (
+              <OpenerGenerator
+                accessToken={accessToken}
+                onUsageUpdate={(count) => setUsageCount(count)}
+              />
+            )}
           </>
         )}
       </div>

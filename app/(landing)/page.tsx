@@ -104,6 +104,7 @@ export default function LandingPage() {
 
           <div className="hidden items-center gap-8 text-sm font-medium md:flex" style={{ color: 'var(--muted-foreground)' }}>
             <a href="#features" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'features' : 'features'}</a>
+            <a href="#demo" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'demo' : 'demo'}</a>
             <a href="#how" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'kaise kaam karta' : 'how it works'}</a>
             <a href="#pricing" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'pricing' : 'pricing'}</a>
           </div>
@@ -326,6 +327,121 @@ export default function LandingPage() {
               <p className="mt-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>{s.d}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* LIVE DEMO — before / after */}
+      <section id="demo" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
+        <div className="text-center mb-12">
+          <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>
+            {lang === 'hi' ? 'live demo' : 'live demo'}
+          </div>
+          <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
+            {lang === 'hi' ? 'Screenshot se' : 'From screenshot'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>
+              {lang === 'hi' ? 'perfect reply tak.' : 'to perfect reply.'}
+            </span>
+          </h2>
+          <p className="mt-3 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            {lang === 'hi'
+              ? 'Real chat — FlirtIQ ka real output. Koi editing nahi.'
+              : 'Real chat. Real FlirtIQ output. No editing.'}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          {/* Before: chat screenshot mockup */}
+          <div>
+            <div className="text-xs font-bold tracking-widest uppercase mb-3 flex items-center gap-2" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px]" style={{ background: 'var(--muted-foreground)' }}>1</span>
+              {lang === 'hi' ? 'Aapka screenshot' : 'Your screenshot'}
+            </div>
+            <div className="rounded-3xl overflow-hidden shadow-card" style={{ background: 'oklch(0.14 0.02 260)', border: '1px solid oklch(0.25 0.02 260)' }}>
+              {/* App header */}
+              <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid oklch(0.22 0.02 260)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: 'linear-gradient(135deg, #e91e8c, #ff6b35)' }}>S</div>
+                <div>
+                  <div className="font-semibold text-sm text-white">Sofia</div>
+                  <div className="text-xs" style={{ color: 'oklch(0.65 0.02 260)' }}>Active 2h ago</div>
+                </div>
+              </div>
+              {/* Messages */}
+              <div className="p-5 space-y-3">
+                <div className="flex justify-end">
+                  <div className="rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[75%] text-sm text-white" style={{ background: 'oklch(0.45 0.15 250)' }}>
+                    Hey! Seen any good movies lately?
+                  </div>
+                </div>
+                <div className="flex">
+                  <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[75%] text-sm" style={{ background: 'oklch(0.22 0.02 260)', color: 'white' }}>
+                    Omg yes — just watched Dune 2 for the third time 😅 Are you into sci-fi?
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <div className="rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[75%] text-sm text-white" style={{ background: 'oklch(0.45 0.15 250)' }}>
+                    Haha not usually but maybe you could convince me 👀
+                  </div>
+                </div>
+                <div className="flex">
+                  <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[75%] text-sm" style={{ background: 'oklch(0.22 0.02 260)', color: 'white' }}>
+                    Challenge accepted 😏 We&apos;d need popcorn though. What&apos;s your go-to snack?
+                  </div>
+                </div>
+              </div>
+              {/* Input bar */}
+              <div className="px-5 pb-5">
+                <div className="rounded-full px-4 py-3 text-sm flex items-center gap-2" style={{ background: 'oklch(0.22 0.02 260)', color: 'oklch(0.55 0.02 260)' }}>
+                  <span className="flex-1">Type a message…</span>
+                  <span>😊</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* After: FlirtIQ output */}
+          <div>
+            <div className="text-xs font-bold tracking-widest uppercase mb-3 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px]" style={{ background: 'var(--gradient-primary)' }}>2</span>
+              {lang === 'hi' ? 'FlirtIQ ka output' : 'FlirtIQ output'}
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'AURA',      color: 'oklch(0.6 0.22 290)', bg: 'oklch(0.97 0.015 290)', border: 'oklch(0.88 0.06 290)', reply: lang === 'hi' ? "Popcorn toh bahana hai, date banana asli challenge hai 😏" : "Popcorn's just the excuse. The real challenge is making a date happen 😏" },
+                { label: 'COOL',      color: 'oklch(0.6 0.17 220)', bg: 'oklch(0.97 0.012 220)', border: 'oklch(0.88 0.05 220)', reply: lang === 'hi' ? "Salt & vinegar chips. Boring choices allowed nahi mujhe 😅" : "Salt & vinegar chips. No boring snack choices allowed around me 😅" },
+                { label: 'BOLD',      color: 'oklch(0.65 0.2 40)',  bg: 'oklch(0.98 0.02 50)',   border: 'oklch(0.9 0.09 60)',   reply: lang === 'hi' ? "Settle it over Dune + nachos — Friday khaali hai?" : "Settle it over Dune + nachos. Friday free?" },
+                { label: 'GENTLEMAN', color: 'oklch(0.64 0.24 5)',  bg: 'oklch(0.98 0.015 10)',  border: 'oklch(0.88 0.08 5)',   reply: lang === 'hi' ? "Honestly you just sold me on Dune. Kab dekhein?" : "Honestly you just sold me on Dune. When are we watching?" },
+              ].map(card => (
+                <div key={card.label} className="rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3"
+                  style={{ background: card.bg, border: `1px solid ${card.border}` }}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-[10px] font-bold tracking-widest shrink-0" style={{ color: card.color }}>{card.label}</span>
+                    <p className="text-sm truncate" style={{ color: 'var(--foreground)' }}>&ldquo;{card.reply}&rdquo;</p>
+                  </div>
+                  <span className="shrink-0 text-xs font-medium px-2 py-1 rounded-full" style={{ background: card.color + '18', color: card.color }}>Copy</span>
+                </div>
+              ))}
+
+              {/* Compatibility score */}
+              <div className="rounded-2xl px-5 py-4 flex items-center justify-between shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                <div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Compatibility</div>
+                  <div className="text-2xl font-extrabold" style={{ color: 'oklch(0.6 0.18 160)' }}>84%</div>
+                  <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Good Vibes ✨</div>
+                </div>
+                <div className="text-right text-xs max-w-[55%]" style={{ color: 'var(--muted-foreground)' }}>
+                  <strong style={{ color: 'var(--foreground)' }}>Strategy:</strong> She&apos;s playful and engaged — ask her out directly. A movie + snack plan is already half-formed.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mt-10">
+          <Link href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold text-white transition-transform hover:scale-105 shadow-pill"
+            style={{ background: 'var(--gradient-primary)' }}>
+            {lang === 'hi' ? 'Apna chat analyze karo' : 'Analyze your own chat'} <span>→</span>
+          </Link>
         </div>
       </section>
 
