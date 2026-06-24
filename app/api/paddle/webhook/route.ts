@@ -3,7 +3,6 @@ import crypto from 'crypto'
 import { createServerClient } from '@/lib/supabase'
 
 function verifySignature(body: string, signature: string, secret: string): boolean {
-  // Paddle signature format: ts=TIMESTAMP;h1=HMAC_SHA256
   const parts: Record<string, string> = {}
   for (const part of signature.split(';')) {
     const [k, v] = part.split('=')
@@ -48,6 +47,34 @@ export async function POST(req: Request) {
 
   try {
     switch (eventType) {
+      case 'transaction.completed': {
+        const customData = (data.custom_data as Record<string, string>) ?? {}
+        const userId = customData.user_id
+        if (!userId) break
+        const items = (data.items as Array<Record<string, unknown>>) ?? []
+        const priceId = ((items[0]?.price as Record<string, unknown>)?.id as string) ?? ''
+        const itemQty = (items[0]?.quantity as number) ?? 1
+        const creditsToAdd = resolveCredits(priceId, itemQty)
+        if (creditsToAdd === 0) break
+        // Upsert: create row if none, or increment credits
+        const { data: existing } = await supabase
+          .from('subscriptions')
+          .select('credits')
+          .eq('user_id', userId)
+          .single()
+        if (existing) {
+          await supabase
+            .from('subscriptions')
+            .update({ credits: (existing.credits ?? 0) + creditsToAdd })
+            .eq('user_id', userId)
+        } else {
+          await supabase
+            .from('subscriptions')
+            .insert({ user_id: userId, credits: creditsToAdd, status: 'inactive' })
+        }
+        break
+      }
+
       case 'subscription.created': {
         const customData = (data.custom_data as Record<string, string>) ?? {}
         const userId = customData.user_id
@@ -106,4 +133,12 @@ function resolvePlan(data: Record<string, unknown>): string {
   if (priceId === process.env.PADDLE_PRICE_MONTHLY) return 'monthly'
   if (priceId === process.env.PADDLE_PRICE_YEARLY) return 'yearly'
   return 'monthly'
+}
+
+function resolveCredits(priceId: string, quantity = 1): number {
+  if (priceId === process.env.PADDLE_PRICE_CREDITS_10) return 10
+  if (priceId === process.env.PADDLE_PRICE_CREDITS_50) return 50
+  if (priceId === process.env.PADDLE_PRICE_CREDITS_150) return 150
+  if (priceId === process.env.PADDLE_PRICE_CREDITS_CUSTOM) return Math.max(1, quantity)
+  return 0
 }

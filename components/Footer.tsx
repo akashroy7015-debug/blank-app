@@ -14,7 +14,7 @@ export default function Footer() {
               <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
             </Link>
             <p className="text-sm max-w-xs" style={{ color: 'var(--muted-foreground)' }}>
-              Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by Gemini AI.
+              Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by AI.
             </p>
             <div className="flex items-center gap-4 mt-5">
               {[Twitter, Instagram, Github].map((Icon, i) => (
@@ -41,6 +41,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm" style={{ color: 'var(--muted-foreground)' }}>
               <li><Link href="/privacy" className="hover:opacity-80 transition-opacity">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:opacity-80 transition-opacity">Terms of Service</Link></li>
+              <li><Link href="/refunds" className="hover:opacity-80 transition-opacity">Refund Policy</Link></li>
               <li><a href="mailto:hello@flirtiq.app" className="hover:opacity-80 transition-opacity">Contact</a></li>
             </ul>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Crown, Zap, Star } from 'lucide-react'
+import { Check, Crown, Zap, Star, Coins } from 'lucide-react'
 import { useLanguage } from '@/lib/language'
 import { createBrowserClient } from '@/lib/supabase'
 
@@ -55,12 +55,19 @@ const PLANS = [
   },
 ]
 
+const CREDIT_PACKS = [
+  { key: 'credits_10',  credits: 10,  price: '$1.99',  perCredit: '~$0.20', popular: false },
+  { key: 'credits_50',  credits: 50,  price: '$7.99',  perCredit: '~$0.16', popular: true  },
+  { key: 'credits_150', credits: 150, price: '$19.99', perCredit: '~$0.13', popular: false },
+]
+
 export default function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [customCredits, setCustomCredits] = useState(25)
   const { lang } = useLanguage()
   const c = copy[lang]
 
-  const handleCheckout = async (plan: string) => {
+  const handleCheckout = async (plan: string, quantity?: number) => {
     setLoadingPlan(plan)
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -72,7 +79,7 @@ export default function PricingSection() {
       const res = await fetch('/api/paddle/checkout', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, quantity }),
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -163,6 +170,102 @@ export default function PricingSection() {
               </div>
             )
           })}
+        </div>
+
+        {/* Pay As You Go Credits */}
+        <div className="mt-16">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-3"
+              style={{ background: 'oklch(0.7 0.19 55 / 0.1)', border: '1px solid oklch(0.7 0.19 55 / 0.2)', color: 'oklch(0.6 0.19 55)' }}>
+              <Coins size={14} />
+              Pay As You Go
+            </div>
+            <h3 className="font-display text-2xl md:text-3xl italic" style={{ color: 'var(--foreground)' }}>
+              Just need a few?{' '}
+              <span style={{ color: 'var(--primary)' }}>Buy credits.</span>
+            </h3>
+            <p className="text-sm mt-2" style={{ color: 'var(--muted-foreground)' }}>
+              No subscription. Credits never expire. 1 credit = 1 analysis.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+            {CREDIT_PACKS.map((pack) => (
+              <div key={pack.key}
+                className={`relative flex flex-col items-center rounded-2xl p-6 text-center transition-all hover:-translate-y-1 shadow-soft ${pack.popular ? 'ring-2' : ''}`}
+                style={{ background: 'var(--card)', border: `1px solid var(--border)`, ...(pack.popular ? { ringColor: 'oklch(0.7 0.19 55)' } : {}) }}>
+                {pack.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, oklch(0.7 0.19 55), oklch(0.6 0.22 40))' }}>
+                    BEST VALUE
+                  </div>
+                )}
+                <div className="text-3xl mb-2">🪙</div>
+                <div className="text-3xl font-extrabold mb-1" style={{ color: 'var(--foreground)' }}>{pack.credits}</div>
+                <div className="text-sm font-medium mb-3" style={{ color: 'var(--muted-foreground)' }}>credits</div>
+                <div className="text-2xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{pack.price}</div>
+                <div className="text-xs mb-5" style={{ color: 'var(--muted-foreground)' }}>{pack.perCredit} per analysis</div>
+                <button
+                  onClick={() => handleCheckout(pack.key)}
+                  disabled={loadingPlan === pack.key}
+                  className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
+                  style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
+                  {loadingPlan === pack.key ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                      Loading...
+                    </span>
+                  ) : lang === 'hi' ? 'Kharido' : 'Buy Now'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Custom credit amount */}
+          <div className="mt-8 max-w-sm mx-auto rounded-2xl p-6 text-center"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <p className="text-sm font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
+              {lang === 'hi' ? 'Khud choose karo kitne credits chahiye' : 'Or choose your own amount'}
+            </p>
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                onClick={() => setCustomCredits(c => Math.max(1, c - 1))}
+                className="w-9 h-9 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:opacity-80"
+                style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
+                −
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={10000}
+                value={customCredits}
+                onChange={e => setCustomCredits(Math.max(1, Math.min(10000, parseInt(e.target.value) || 1)))}
+                className="flex-1 text-center text-xl font-extrabold rounded-xl py-2 bg-transparent outline-none"
+                style={{ color: 'var(--foreground)', border: '1px solid var(--border)' }}
+              />
+              <button
+                onClick={() => setCustomCredits(c => Math.min(10000, c + 1))}
+                className="w-9 h-9 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:opacity-80"
+                style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
+                +
+              </button>
+            </div>
+            <p className="text-xs mb-4" style={{ color: 'var(--muted-foreground)' }}>
+              ~${(customCredits * 0.19).toFixed(2)} · $0.19 per credit
+            </p>
+            <button
+              onClick={() => handleCheckout('credits_custom', customCredits)}
+              disabled={loadingPlan === 'credits_custom'}
+              className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
+              style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
+              {loadingPlan === 'credits_custom' ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                  Loading...
+                </span>
+              ) : lang === 'hi' ? `${customCredits} Credits Kharido` : `Buy ${customCredits} Credits`}
+            </button>
+          </div>
         </div>
       </div>
     </section>

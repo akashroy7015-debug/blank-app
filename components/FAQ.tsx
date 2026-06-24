@@ -8,7 +8,7 @@ const faqs = {
   en: [
     {
       q: 'Is my conversation data private?',
-      a: "Yes. Screenshots are sent directly to Google's Gemini API for analysis and are never stored on our servers. We don't save your chat content.",
+      a: "Yes. Screenshots are sent to our AI for analysis and are never stored on our servers. We don't save your chat content.",
     },
     {
       q: 'Which apps does FlirtIQ work with?',
@@ -34,7 +34,7 @@ const faqs = {
   hi: [
     {
       q: 'Kya meri conversation private hai?',
-      a: "Haan. Screenshots seedhe Google ke Gemini API ko bheje jaate hain analyze karne ke liye aur hamare servers pe kabhi store nahi hote. Hum tumhara chat content save nahi karte.",
+      a: "Haan. Screenshots hamare AI ko bheje jaate hain analyze karne ke liye aur hamare servers pe kabhi store nahi hote. Hum tumhara chat content save nahi karte.",
     },
     {
       q: 'FlirtIQ kaun se apps pe kaam karta hai?',
