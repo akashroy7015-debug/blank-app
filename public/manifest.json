@@ -4,8 +4,8 @@
   "description": "Upload a chat screenshot, get 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram & more.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#fdf7f0",
-  "theme_color": "#e03e52",
+  "background_color": "#FFF8F2",
+  "theme_color": "#E8395A",
   "orientation": "portrait",
   "scope": "/",
   "icons": [
