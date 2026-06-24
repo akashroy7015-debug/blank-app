@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         </div>
 
         <h1 className="font-display text-4xl italic mb-3" style={{ color: 'var(--foreground)' }}>Privacy Policy</h1>
-        <p className="text-sm mb-12" style={{ color: 'var(--muted-foreground)' }}>Last updated: June 20, 2026</p>
+        <p className="text-sm mb-12" style={{ color: 'var(--muted-foreground)' }}>Last updated: June 24, 2026</p>
 
         <div className="max-w-none space-y-10 text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>
 
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
 
             <h3 className="text-base font-semibold mt-5 mb-2">b) Screenshots You Upload</h3>
             <p>
-              Screenshots are transmitted directly to Google&apos;s Gemini API for AI analysis. <strong className="">We do not store screenshots on our servers.</strong> Once the analysis is returned to you, the image is discarded. Google&apos;s use of this data is governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{color:"var(--primary)"}}>Google&apos;s Privacy Policy</a>.
+              Screenshots are transmitted directly to OpenAI&apos;s API (GPT-4o) for AI analysis. <strong className="">We do not store screenshots on our servers.</strong> Once the analysis is returned to you, the image is discarded. OpenAI&apos;s use of this data is governed by <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{color:"var(--primary)"}}>OpenAI&apos;s Privacy Policy</a>.
             </p>
 
             <h3 className="text-base font-semibold mt-5 mb-2">c) Usage Data</h3>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
 
             <h3 className="text-base font-semibold mt-5 mb-2">d) Payment Data</h3>
             <p>
-              Payments are processed entirely by <strong className="">Lemon Squeezy</strong> (our Merchant of Record). We never see or store your card number, bank details, or billing address. We receive only a customer ID and subscription status from Lemon Squeezy.
+              Payments are processed entirely by <strong className="">Paddle</strong> (our Merchant of Record). We never see or store your card number, bank details, or billing address. We receive only a customer ID and subscription status from Paddle.
             </p>
 
             <h3 className="text-base font-semibold mt-5 mb-2">e) Technical Data</h3>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
                 </thead>
                 <tbody style={{borderTop:"1px solid var(--border)"}}>
                   <tr>
-                    <td className="px-4 py-3 text-pink-400">Google Gemini</td>
+                    <td className="px-4 py-3 text-pink-400">OpenAI (GPT-4o)</td>
                     <td className="px-4 py-3">AI screenshot analysis</td>
                     <td className="px-4 py-3">Your uploaded screenshot (not stored)</td>
                   </tr>
@@ -96,8 +96,8 @@ export default function PrivacyPage() {
                     <td className="px-4 py-3">Email, subscription status</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 text-pink-400">Lemon Squeezy</td>
-                    <td className="px-4 py-3">Payment processing</td>
+                    <td className="px-4 py-3 text-pink-400">Paddle</td>
+                    <td className="px-4 py-3">Payment processing (Merchant of Record)</td>
                     <td className="px-4 py-3">Email, payment details</td>
                   </tr>
                   <tr>
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">9. International Data Transfers</h2>
             <p>
-              FlirtIQ operates globally. Your data may be processed in countries outside your own (including the United States via Google, Supabase, and Vercel). We ensure appropriate safeguards are in place, including Standard Contractual Clauses where required by GDPR.
+              FlirtIQ operates globally. Your data may be processed in countries outside your own (including the United States via OpenAI, Supabase, Paddle, and Vercel). We ensure appropriate safeguards are in place, including Standard Contractual Clauses where required by GDPR.
             </p>
           </section>
 

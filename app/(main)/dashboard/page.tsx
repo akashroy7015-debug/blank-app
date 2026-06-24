@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import ImageUploader from '@/components/ImageUploader'
 import AnalysisResult from '@/components/AnalysisResult'
 import { getTodayUsage, incrementUsage, canUseFreeTier, FREE_LIMIT } from '@/lib/usage'
-import { Sparkles, AlertCircle, Crown } from 'lucide-react'
+import { Sparkles, AlertCircle, Crown, Infinity } from 'lucide-react'
 import Link from 'next/link'
+import { createBrowserClient } from '@/lib/supabase'
 
 interface AnalysisResultData {
   replies: { aura: string; cool: string; bold: string; gentleman: string }
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [usageCount, setUsageCount] = useState(0)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [isSubscribed, setIsSubscribed] = useState(false)
 
   useEffect(() => {
     setUsageCount(getTodayUsage())
@@ -28,11 +30,28 @@ export default function DashboardPage() {
     if (params.get('success') === 'true') {
       setSuccessMessage('Payment successful! You now have unlimited analyses.')
     }
+
+    const checkSubscription = async () => {
+      const supabase = createBrowserClient()
+      if (!supabase) return
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', session.user.id)
+        .single()
+      if (data?.status === 'active') setIsSubscribed(true)
+    }
+    checkSubscription()
   }, [])
 
   const handleAnalyze = async () => {
     if (!imageFile) { setError('Please upload a chat screenshot first.'); return }
-    if (!canUseFreeTier()) { setError('You have used all 3 free analyses for today. Upgrade to continue.'); return }
+    if (!isSubscribed && !canUseFreeTier()) {
+      setError('You have used all 3 free analyses for today. Upgrade to continue.')
+      return
+    }
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
@@ -54,8 +73,10 @@ export default function DashboardPage() {
       }
       const data = await response.json()
       setResult(data)
-      incrementUsage()
-      setUsageCount(getTodayUsage())
+      if (!isSubscribed) {
+        incrementUsage()
+        setUsageCount(getTodayUsage())
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -64,7 +85,7 @@ export default function DashboardPage() {
   }
 
   const remaining = FREE_LIMIT - usageCount
-  const isLimitReached = !canUseFreeTier()
+  const isLimitReached = !isSubscribed && !canUseFreeTier()
 
   return (
     <main className="min-h-screen py-12 px-4">
@@ -73,7 +94,7 @@ export default function DashboardPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
             style={{ background: 'oklch(0.64 0.24 5 / 0.1)', color: 'var(--primary)', border: '1px solid oklch(0.64 0.24 5 / 0.2)' }}>
-            <Sparkles size={14} /> Powered by Gemini AI
+            <Sparkles size={14} /> Powered by GPT-4o
           </div>
           <h1 className="font-display text-4xl md:text-5xl mb-4" style={{ color: 'var(--foreground)' }}>
             Analyze Your <span className="italic" style={{ color: 'var(--primary)' }}>Chat</span>
@@ -93,19 +114,27 @@ export default function DashboardPage() {
         )}
 
         {/* Usage Banner */}
-        <div className={`mb-8 rounded-2xl p-4 flex items-center justify-between`}
+        <div className="mb-8 rounded-2xl p-4 flex items-center justify-between"
           style={isLimitReached
             ? { background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }
             : { background: 'var(--card)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3">
             {isLimitReached
               ? <AlertCircle size={19} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
-              : <Sparkles size={19} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
+              : isSubscribed
+                ? <Infinity size={19} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                : <Sparkles size={19} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
             <div>
               <p className="font-medium text-sm" style={{ color: isLimitReached ? 'oklch(0.577 0.245 27.325)' : 'var(--foreground)' }}>
-                {isLimitReached ? 'Daily limit reached' : `${remaining} of ${FREE_LIMIT} free analyses remaining today`}
+                {isLimitReached
+                  ? 'Daily limit reached'
+                  : isSubscribed
+                    ? 'Unlimited analyses — Pro plan active'
+                    : `${remaining} of ${FREE_LIMIT} free analyses remaining today`}
               </p>
-              {!isLimitReached && <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>}
+              {!isLimitReached && !isSubscribed && (
+                <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>
+              )}
             </div>
           </div>
           {isLimitReached && (
@@ -136,7 +165,7 @@ export default function DashboardPage() {
               ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
               : { background: 'var(--gradient-primary)', color: 'white' }}>
             {isAnalyzing ? (
-              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing with Gemini AI...</>
+              <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
             ) : (
               <><Sparkles size={19} /> Analyze My Chat</>
             )}

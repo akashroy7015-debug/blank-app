@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Check, Crown, Zap, Star } from 'lucide-react'
 import { useLanguage } from '@/lib/language'
+import { createBrowserClient } from '@/lib/supabase'
 
 const copy = {
   en: {
@@ -62,9 +63,15 @@ export default function PricingSection() {
   const handleCheckout = async (plan: string) => {
     setLoadingPlan(plan)
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      const supabase = createBrowserClient()
+      if (supabase) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+      }
       const res = await fetch('/api/paddle/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ plan }),
       })
       const data = await res.json()
