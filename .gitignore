@@ -17,6 +17,11 @@ public/workbox-*.js.map
 public/worker-*.js
 public/worker-*.js.map
 
+# Android TWA build — NEVER commit the signing keystore
+twa-build/
+*.keystore
+*.jks
+
 # Vercel
 .vercel
 
