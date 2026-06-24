@@ -96,3 +96,48 @@
 .shadow-card  { box-shadow: var(--shadow-card); }
 .shadow-pill  { box-shadow: var(--shadow-pill); }
 .bg-gradient-primary { background-image: var(--gradient-primary); }
+
+/* ─── Accessibility ─── */
+
+/* Visible keyboard focus ring for all interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #E8395A;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Screen-reader-only helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect users who prefer reduced motion: stop decorative animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float-up,
+  .animate-float-soft,
+  .animate-marquee,
+  .animate-pulse-glow {
+    animation: none !important;
+  }
+}

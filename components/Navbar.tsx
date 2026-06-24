@@ -67,6 +67,7 @@ export default function Navbar() {
           {/* Language toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+            aria-label={lang === 'en' ? 'Switch to Hindi' : 'Switch to English'}
             className="hidden md:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
             style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
           >
@@ -110,6 +111,8 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
             className="md:hidden hover:opacity-70 transition-opacity"
             style={{ color: 'var(--muted-foreground)' }}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

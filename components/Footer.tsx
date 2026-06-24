@@ -17,8 +17,12 @@ export default function Footer() {
               Upload a chat screenshot and get 4 perfect replies, a compatibility score, and expert strategy — powered by AI.
             </p>
             <div className="flex items-center gap-4 mt-5">
-              {[Twitter, Instagram, Github].map((Icon, i) => (
-                <a key={i} href="#" className="hover:opacity-80 transition-opacity" style={{ color: 'var(--muted-foreground)' }}>
+              {[
+                { Icon: Twitter, label: 'FlirtIQ on Twitter' },
+                { Icon: Instagram, label: 'FlirtIQ on Instagram' },
+                { Icon: Github, label: 'FlirtIQ on GitHub' },
+              ].map(({ Icon, label }) => (
+                <a key={label} href="#" aria-label={label} className="hover:opacity-80 transition-opacity" style={{ color: 'var(--muted-foreground)' }}>
                   <Icon size={17} />
                 </a>
               ))}

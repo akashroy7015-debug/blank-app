@@ -46,6 +46,7 @@ export default function ImageUploader({ setImageFile, setImagePreview, imagePrev
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={imagePreview} alt="Chat screenshot preview" className="w-full h-full object-contain max-h-72" style={{ background: 'var(--muted)' }} />
           <button onClick={() => { setImageFile(null); setImagePreview(null) }}
+            aria-label="Remove screenshot"
             className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-80"
             style={{ background: 'oklch(0.18 0.03 340 / 0.7)', backdropFilter: 'blur(4px)' }}>
             <X size={15} />
@@ -60,7 +61,7 @@ export default function ImageUploader({ setImageFile, setImagePreview, imagePrev
           </div>
           <label className="cursor-pointer font-medium transition-opacity hover:opacity-70" style={{ color: 'var(--primary)' }}>
             Change Photo
-            <input type="file" accept="image/png,image/jpg,image/jpeg" onChange={handleInputChange} className="hidden" />
+            <input type="file" accept="image/png,image/jpg,image/jpeg" onChange={handleInputChange} className="hidden" aria-label="Change chat screenshot" />
           </label>
         </div>
       </div>
@@ -80,6 +81,7 @@ export default function ImageUploader({ setImageFile, setImagePreview, imagePrev
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
     >
       <input type="file" accept="image/png,image/jpg,image/jpeg" onChange={handleInputChange}
+        aria-label="Upload chat screenshot"
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       <div className="flex flex-col items-center gap-4">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'oklch(0.64 0.24 5 / 0.1)' }}>
