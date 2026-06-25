@@ -16,7 +16,8 @@ export async function POST(req: Request) {
     const { plan, quantity } = await req.json()
 
     if (!plan || !PRICE_IDS[plan]) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+      const missing = plan ? `price ID for "${plan}" not configured` : 'no plan specified'
+      return NextResponse.json({ error: `Invalid plan: ${missing}` }, { status: 400 })
     }
 
     const qty = (plan === 'credits_custom' && typeof quantity === 'number' && quantity >= 1)
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.PADDLE_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'Paddle not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'Paddle API key not configured' }, { status: 500 })
     }
 
     const authHeader = req.headers.get('authorization')
@@ -42,22 +43,17 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Session expired. Please sign in again.' }, { status: 401 })
     }
-    const userId = user.id
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
-
-    const body: Record<string, unknown> = {
-      items: [{ price_id: PRICE_IDS[plan], quantity: qty }],
-      checkout: {
-        url: `${appUrl}/dashboard?success=true`,
-      },
-    }
-
-    body.custom_data = { user_id: userId }
-
     const paddleBase = process.env.PADDLE_SANDBOX === 'true'
       ? 'https://sandbox-api.paddle.com'
       : 'https://api.paddle.com'
+
+    const body = {
+      items: [{ price_id: PRICE_IDS[plan], quantity: qty }],
+      checkout: { url: `${appUrl}/dashboard?success=true` },
+      custom_data: { user_id: user.id },
+    }
 
     const res = await fetch(`${paddleBase}/transactions`, {
       method: 'POST',
@@ -68,14 +64,19 @@ export async function POST(req: Request) {
       body: JSON.stringify(body),
     })
 
+    const data = await res.json()
+
     if (!res.ok) {
-      const err = await res.text()
-      console.error('Paddle checkout error:', err)
-      return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 })
+      const paddleError = data?.error?.detail ?? data?.error?.code ?? JSON.stringify(data)
+      console.error('Paddle API error:', paddleError)
+      return NextResponse.json({ error: `Paddle error: ${paddleError}` }, { status: 500 })
     }
 
-    const data = await res.json()
     const url = data?.data?.checkout?.url
+    if (!url) {
+      console.error('Paddle response missing checkout URL:', JSON.stringify(data))
+      return NextResponse.json({ error: 'Paddle did not return a checkout URL. Check your Paddle dashboard settings.' }, { status: 500 })
+    }
 
     return NextResponse.json({ url })
   } catch (error) {
