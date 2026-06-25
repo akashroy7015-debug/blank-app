@@ -117,6 +117,11 @@ export default function LandingPage() {
             >
               {lang === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 EN'}
             </button>
+            <Link href="/auth/login"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold transition-colors"
+              style={{ color: 'var(--muted-foreground)' }}>
+              {lang === 'hi' ? 'Login' : 'Login'}
+            </Link>
             <Link href="/dashboard"
               className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105 shadow-pill"
               style={{ background: 'var(--gradient-primary)' }}>
