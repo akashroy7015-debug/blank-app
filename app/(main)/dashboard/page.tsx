@@ -5,7 +5,7 @@ import ImageUploader from '@/components/ImageUploader'
 import AnalysisResult from '@/components/AnalysisResult'
 import OpenerGenerator from '@/components/OpenerGenerator'
 import { FREE_LIMIT } from '@/lib/usage'
-import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock, ImageIcon, MessageSquarePlus, Camera } from 'lucide-react'
+import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock, ImageIcon, MessageSquarePlus, Camera, CalendarDays, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
 
@@ -38,6 +38,8 @@ export default function DashboardPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [mode, setMode] = useState<Mode>('analyze')
+  const [plan, setPlan] = useState<string | null>(null)
+  const [periodEnd, setPeriodEnd] = useState<string | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -59,12 +61,14 @@ export default function DashboardPage() {
 
       const { data } = await supabase
         .from('subscriptions')
-        .select('status, credits, free_analyses_count, free_analyses_date')
+        .select('status, credits, free_analyses_count, free_analyses_date, plan, current_period_end')
         .eq('user_id', session.user.id)
         .single()
 
       if (data?.status === 'active') setIsSubscribed(true)
       if ((data?.credits ?? 0) > 0) setCredits(data?.credits ?? 0)
+      if (data?.plan) setPlan(data.plan)
+      if (data?.current_period_end) setPeriodEnd(data.current_period_end)
 
       const today = new Date().toISOString().split('T')[0]
       const isToday = data?.free_analyses_date === today
@@ -246,29 +250,91 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            <div className="mb-8 rounded-2xl p-4 flex items-center justify-between"
-              style={isLimitReached
-                ? { background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }
-                : { background: 'var(--card)', border: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                {bannerIcon}
-                <div>
-                  <p className="font-medium text-sm" style={{ color: isLimitReached ? 'oklch(0.577 0.245 27.325)' : 'var(--foreground)' }}>
-                    {bannerText}
+            {/* Account Status Card */}
+            <div className="mb-6 rounded-2xl p-5 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Account Status</h2>
+                {!isSubscribed && (
+                  <Link href="/pricing"
+                    className="text-xs font-semibold rounded-full px-3 py-1.5 text-white shadow-pill transition-transform hover:scale-105"
+                    style={{ background: 'var(--gradient-primary)' }}>
+                    Upgrade
+                  </Link>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Plan */}
+                <div className="rounded-xl p-3 text-center" style={{ background: 'var(--muted)' }}>
+                  <div className="flex justify-center mb-1.5">
+                    <Crown size={16} style={{ color: isSubscribed ? 'var(--primary)' : 'var(--muted-foreground)' }} />
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Plan</p>
+                  <p className="font-bold text-sm capitalize" style={{ color: 'var(--foreground)' }}>
+                    {isSubscribed && plan ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' Pro' : 'Free'}
                   </p>
-                  {!isLimitReached && !isSubscribed && credits === 0 && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Resets at midnight</p>
-                  )}
+                </div>
+
+                {/* Days left / renewal */}
+                <div className="rounded-xl p-3 text-center" style={{ background: 'var(--muted)' }}>
+                  <div className="flex justify-center mb-1.5">
+                    <CalendarDays size={16} style={{ color: isSubscribed ? 'var(--primary)' : 'var(--muted-foreground)' }} />
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                    {isSubscribed ? 'Renews in' : 'Resets in'}
+                  </p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>
+                    {isSubscribed && periodEnd
+                      ? (() => {
+                          const days = Math.max(0, Math.ceil((new Date(periodEnd).getTime() - Date.now()) / 86400000))
+                          return days === 0 ? 'Today' : `${days}d`
+                        })()
+                      : (() => {
+                          const now = new Date()
+                          const midnight = new Date(now)
+                          midnight.setHours(24, 0, 0, 0)
+                          const hrs = Math.ceil((midnight.getTime() - now.getTime()) / 3600000)
+                          return `${hrs}h`
+                        })()
+                    }
+                  </p>
+                </div>
+
+                {/* Credits / analyses */}
+                <div className="rounded-xl p-3 text-center" style={{ background: 'var(--muted)' }}>
+                  <div className="flex justify-center mb-1.5">
+                    {isSubscribed
+                      ? <Infinity size={16} style={{ color: 'var(--primary)' }} />
+                      : credits > 0
+                        ? <Coins size={16} style={{ color: 'oklch(0.7 0.19 55)' }} />
+                        : <Zap size={16} style={{ color: 'var(--muted-foreground)' }} />}
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                    {isSubscribed ? 'Analyses' : credits > 0 ? 'Credits' : 'Free left'}
+                  </p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>
+                    {isSubscribed ? '∞' : credits > 0 ? credits : `${remaining}/${FREE_LIMIT}`}
+                  </p>
                 </div>
               </div>
-              {isLimitReached && (
+            </div>
+
+            {/* Usage banner (limit reached only) */}
+            {isLimitReached && (
+              <div className="mb-6 rounded-2xl p-4 flex items-center justify-between"
+                style={{ background: 'oklch(0.577 0.245 27.325 / 0.07)', border: '1px solid oklch(0.577 0.245 27.325 / 0.3)' }}>
+                <div className="flex items-center gap-3">
+                  <AlertCircle size={19} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
+                  <p className="font-medium text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>
+                    Daily limit reached — buy credits or upgrade to continue
+                  </p>
+                </div>
                 <Link href="/pricing"
                   className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105 shrink-0"
                   style={{ background: 'var(--gradient-primary)' }}>
                   Get Credits
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
 
             {mode === 'analyze' ? (
               <>
