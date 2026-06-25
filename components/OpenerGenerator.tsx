@@ -2,6 +2,26 @@
 
 import { useState } from 'react'
 import { Sparkles, AlertCircle, Copy, Check, Lightbulb, Heart, Zap, Flame, RefreshCw, CopyCheck } from 'lucide-react'
+import { useLanguage } from '@/lib/language'
+
+const copy = {
+  en: {
+    nameLbl: 'Their name', optional: '(optional)', platformLbl: 'Platform',
+    selectPlatform: 'Select a platform…', bioLbl: 'Their bio / about section',
+    interestsLbl: 'Interests / hobbies shown', photoLbl: 'Profile photo description',
+    emptyError: 'Add at least one detail about your match to get personalized openers.',
+    generating: 'Crafting openers…', cta: 'Write My Opener',
+    resultsTitle: 'Your 4 Opening Lines', tip: 'Conversation Tip',
+  },
+  hi: {
+    nameLbl: 'Unka naam', optional: '(optional)', platformLbl: 'Platform',
+    selectPlatform: 'Platform choose karo…', bioLbl: 'Unka bio / about section',
+    interestsLbl: 'Interests / hobbies',  photoLbl: 'Profile photo kaisi hai',
+    emptyError: 'Kam se kam ek detail daalo match ke baare mein.',
+    generating: 'Openers ban rahe hain…', cta: 'Opener Likho',
+    resultsTitle: 'Tumhare 4 Opening Lines', tip: 'Conversation Tip',
+  },
+}
 
 interface OpenerResult {
   replies: { aura: string; cool: string; bold: string; gentleman: string }
@@ -37,6 +57,8 @@ interface Props {
 }
 
 export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUsed }: Props) {
+  const { lang } = useLanguage()
+  const c = copy[lang]
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
   const [bio, setBio] = useState('')
@@ -49,7 +71,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
 
   const handleGenerate = async () => {
     if (!bio && !interests && !name && !photoDesc) {
-      setError('Add at least one detail about your match to get personalized openers.')
+      setError(c.emptyError)
       return
     }
     setIsLoading(true)
@@ -93,7 +115,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {/* Match name */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-              Their name <span style={{ color: 'var(--muted-foreground)', fontWeight: 400 }}>(optional)</span>
+              {c.nameLbl} <span style={{ color: 'var(--muted-foreground)', fontWeight: 400 }}>{c.optional}</span>
             </label>
             <input
               type="text"
@@ -111,7 +133,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {/* Platform */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-              Platform <span style={{ color: 'var(--muted-foreground)', fontWeight: 400 }}>(optional)</span>
+              {c.platformLbl} <span style={{ color: 'var(--muted-foreground)', fontWeight: 400 }}>{c.optional}</span>
             </label>
             <select
               value={platform}
@@ -119,7 +141,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
               className="w-full rounded-xl px-4 py-3 text-sm outline-none"
               style={{ background: 'var(--muted)', color: platform ? 'var(--foreground)' : 'var(--muted-foreground)', border: '1px solid transparent' }}
             >
-              <option value="">Select a platform…</option>
+              <option value="">{c.selectPlatform}</option>
               {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
@@ -127,7 +149,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {/* Bio */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-              Their bio / about section
+              {c.bioLbl}
             </label>
             <textarea
               value={bio}
@@ -145,7 +167,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {/* Interests */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-              Interests / hobbies shown
+              {c.interestsLbl}
             </label>
             <input
               type="text"
@@ -163,7 +185,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {/* Photo description */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-              Profile photo description
+              {c.photoLbl}
             </label>
             <input
               type="text"
@@ -195,8 +217,8 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
             ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
             : { background: 'var(--gradient-primary)', color: 'white' }}>
           {isLoading
-            ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Crafting openers…</>
-            : <><Sparkles size={19} /> Write My Opener</>}
+            ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {c.generating}</>
+            : <><Sparkles size={19} /> {c.cta}</>}
         </button>
       </div>
 
@@ -204,7 +226,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
       {result && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>Your 4 Opening Lines</h2>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{c.resultsTitle}</h2>
             <button
               onClick={handleCopyAll}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all hover:opacity-80"

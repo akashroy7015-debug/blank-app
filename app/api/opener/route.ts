@@ -113,6 +113,13 @@ Style guide:
 - BOLD: Takes charge. Could be a direct compliment, a question about something specific, or suggesting something fun.
 - GENTLEMAN: Shows you actually read their profile. Genuine, warm, no cheesiness.
 
+LANGUAGE RULE (critical): Detect the language and cultural context from the match's bio and profile details.
+- If the bio is in Hindi or Hinglish → write all openers in natural Hinglish (mix of Hindi + English like real Indian texting, e.g. "Yaar, tera bio padh ke laga...")
+- If the bio is in Spanish → write in Spanish
+- If the bio is in any other language → match that language
+- If English or unclear → write in English
+- Always match the tone, formality level, and cultural nuance of the profile's language
+
 Match profile:
 ${matchDesc || 'No profile details provided — write general openers that work for most profiles.'}
 
