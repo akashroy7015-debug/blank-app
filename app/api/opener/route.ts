@@ -41,15 +41,29 @@ export async function POST(req: Request) {
     if (isSubscribed) {
       // unlimited — no deduction
     } else if (credits > 0) {
-      const { error: updateErr } = await supabase
+      const { count, error: updateErr } = await supabase
         .from('subscriptions')
         .update({ credits: credits - 1 })
         .eq('user_id', user.id)
+        .gt('credits', 0)  // atomic guard: only succeeds if credits still > 0 at write time
       if (updateErr) {
         console.error('Credit deduction error:', updateErr)
         return NextResponse.json({ error: 'Failed to deduct credit. Please try again.' }, { status: 500 })
       }
-      creditsUsed = true
+      if (count === 0) {
+        // Credits hit 0 between read and write — fall through to free tier
+        const today = new Date().toISOString().split('T')[0]
+        const isNewDay = sub?.free_analyses_date !== today
+        const currentCount = isNewDay ? 0 : (sub?.free_analyses_count ?? 0)
+        if (currentCount >= FREE_LIMIT) {
+          return NextResponse.json({ error: 'Daily free limit reached. Buy credits or upgrade to continue.' }, { status: 429 })
+        }
+        const newCount = currentCount + 1
+        await supabase.from('subscriptions').update({ free_analyses_count: newCount, free_analyses_date: today }).eq('user_id', user.id)
+        freeTierCount = newCount
+      } else {
+        creditsUsed = true
+      }
     } else {
       // Free tier — enforce server-side
       const today = new Date().toISOString().split('T')[0]

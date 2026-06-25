@@ -28,15 +28,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Paddle not configured' }, { status: 500 })
     }
 
-    let userId: string | undefined
     const authHeader = req.headers.get('authorization')
-    if (authHeader) {
-      const supabase = createServerClient()
-      if (supabase) {
-        const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-        userId = user?.id
-      }
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Please sign in before purchasing.' }, { status: 401 })
     }
+
+    const supabase = createServerClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service not configured' }, { status: 500 })
+    }
+
+    const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (!user) {
+      return NextResponse.json({ error: 'Session expired. Please sign in again.' }, { status: 401 })
+    }
+    const userId = user.id
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
 
@@ -47,9 +53,7 @@ export async function POST(req: Request) {
       },
     }
 
-    if (userId) {
-      body.custom_data = { user_id: userId }
-    }
+    body.custom_data = { user_id: userId }
 
     const res = await fetch('https://api.paddle.com/transactions', {
       method: 'POST',

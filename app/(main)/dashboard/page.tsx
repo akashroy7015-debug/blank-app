@@ -234,11 +234,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('success') === 'true') {
+    const isSuccessRedirect = params.get('success') === 'true'
+    if (isSuccessRedirect) {
       setSuccessMessage('Payment successful! Your account has been updated.')
     }
     if (params.get('mode') === 'opener') {
       setMode('opener')
+    }
+
+    const fetchSubscription = async (supabase: NonNullable<ReturnType<typeof createBrowserClient>>, userId: string) => {
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('status, credits, free_analyses_count, free_analyses_date, plan, current_period_end')
+        .eq('user_id', userId)
+        .single()
+
+      setIsSubscribed(data?.status === 'active')
+      setCredits(data?.credits ?? 0)
+      setPlan(data?.plan ?? null)
+      setPeriodEnd(data?.current_period_end ?? null)
+
+      const today = new Date().toISOString().split('T')[0]
+      const isToday = data?.free_analyses_date === today
+      setUsageCount(isToday ? (data?.free_analyses_count ?? 0) : 0)
     }
 
     const checkSubscription = async () => {
@@ -250,20 +268,16 @@ export default function DashboardPage() {
       setAccessToken(session.access_token)
       setIsLoggedIn(true)
 
-      const { data } = await supabase
-        .from('subscriptions')
-        .select('status, credits, free_analyses_count, free_analyses_date, plan, current_period_end')
-        .eq('user_id', session.user.id)
-        .single()
+      await fetchSubscription(supabase, session.user.id)
 
-      if (data?.status === 'active') setIsSubscribed(true)
-      if ((data?.credits ?? 0) > 0) setCredits(data?.credits ?? 0)
-      if (data?.plan) setPlan(data.plan)
-      if (data?.current_period_end) setPeriodEnd(data.current_period_end)
+      // After a successful payment redirect, Paddle's webhook may take a few seconds
+      // to fire. Poll once after a short delay to pick up the updated subscription.
+      if (isSuccessRedirect) {
+        setTimeout(async () => {
+          await fetchSubscription(supabase, session.user.id)
+        }, 4000)
+      }
 
-      const today = new Date().toISOString().split('T')[0]
-      const isToday = data?.free_analyses_date === today
-      setUsageCount(isToday ? (data?.free_analyses_count ?? 0) : 0)
       setAuthChecked(true)
     }
     checkSubscription()
