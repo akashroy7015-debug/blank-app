@@ -166,8 +166,8 @@ export default function AnalysisResult({ result, isLoading, onRegenerate }: Anal
             const Icon = card.icon
             const isRegenerating = regeneratingKey === card.key
             return (
-              <div key={card.key} className={`rounded-2xl p-5 bg-gradient-to-br ${card.bgGradient} transition-opacity ${isRegenerating ? 'opacity-60' : ''}`}
-                style={{ border: `1px solid ${card.borderColor}` }}>
+              <div key={card.key} className={`card-hover rounded-2xl p-5 bg-gradient-to-br ${card.bgGradient} ${isRegenerating ? 'opacity-60' : ''}`}
+                style={{ border: `1px solid ${card.borderColor}`, borderLeft: `4px solid ${card.iconColor}`, boxShadow: 'var(--shadow-soft)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Icon size={15} style={{ color: card.iconColor }} />

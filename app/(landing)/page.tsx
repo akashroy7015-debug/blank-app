@@ -574,7 +574,7 @@ export default function LandingPage() {
                     </div>
                     {/* Style chips */}
                     <div className="px-3 pb-3 flex flex-wrap gap-1">
-                      {['Flirty', 'Confident', 'Funny', 'Sweet'].map(s => (
+                      {['Aura', 'Cool', 'Bold', 'Gentleman'].map(s => (
                         <span key={s} className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white"
                           style={{ background: 'var(--gradient-primary)' }}>{s}</span>
                       ))}

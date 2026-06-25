@@ -45,7 +45,7 @@ export default function PrivacyPage() {
 
             <h3 className="text-base font-semibold mt-5 mb-2">c) Usage Data</h3>
             <p>
-              Free tier usage (count of daily analyses) is stored in your browser&apos;s <strong className="">localStorage</strong> — it never leaves your device and is not transmitted to us. Paid tier usage is tracked server-side in Supabase (date and count only, no content).
+              We track your usage (the number of analyses per day, and your remaining credits) server-side in Supabase. We store only a <strong className="">date and a count</strong> tied to your account — never the content of your chats or screenshots. This lets us enforce the free daily limit and your credit balance.
             </p>
 
             <h3 className="text-base font-semibold mt-5 mb-2">d) Payment Data</h3>
