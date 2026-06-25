@@ -1,12 +1,12 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useLanguage } from '@/lib/language'
+import { useLanguage, LANGS } from '@/lib/language'
 import Logo from '@/components/Logo'
 import { createBrowserClient } from '@/lib/supabase'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Globe, ChevronDown } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 const HEARTS = ['💌', '💕', '✨', '💬', '❤️', '💗', '🌷', '🫶']
@@ -71,10 +71,24 @@ const FAQS_HI = [
 
 export default function LandingPage() {
   const { lang, setLang } = useLanguage()
+  // Landing page content only has EN/HI variants; other languages fall back to English
+  const baseLang: 'en' | 'hi' = lang === 'hi' ? 'hi' : 'en'
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     const supabase = createBrowserClient()
@@ -106,7 +120,8 @@ export default function LandingPage() {
     [],
   )
 
-  const faqs = lang === 'hi' ? FAQS_HI : FAQS_EN
+  const faqs = baseLang === 'hi' ? FAQS_HI : FAQS_EN
+  const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
 
   return (
     <div className="landing-page relative overflow-x-hidden">
@@ -129,20 +144,47 @@ export default function LandingPage() {
           </Link>
 
           <div className="hidden items-center gap-8 text-sm font-medium md:flex" style={{ color: 'var(--muted-foreground)' }}>
-            <a href="#features" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'features' : 'features'}</a>
-            <a href="#demo" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'demo' : 'demo'}</a>
-            <a href="#how" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'kaise kaam karta' : 'how it works'}</a>
-            <a href="#pricing" className="hover:opacity-80 transition-opacity">{lang === 'hi' ? 'pricing' : 'pricing'}</a>
+            <a href="#features" className="hover:opacity-80 transition-opacity">{baseLang === 'hi' ? 'features' : 'features'}</a>
+            <a href="#demo" className="hover:opacity-80 transition-opacity">{baseLang === 'hi' ? 'demo' : 'demo'}</a>
+            <a href="#how" className="hover:opacity-80 transition-opacity">{baseLang === 'hi' ? 'kaise kaam karta' : 'how it works'}</a>
+            <a href="#pricing" className="hover:opacity-80 transition-opacity">{baseLang === 'hi' ? 'pricing' : 'pricing'}</a>
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-              className="hidden md:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
-              style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-            >
-              {lang === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 EN'}
-            </button>
+            {/* Language picker */}
+            <div className="hidden md:block relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen(o => !o)}
+                aria-label="Switch language"
+                aria-expanded={langOpen}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+              >
+                <Globe size={13} />
+                <span>{currentLang.flag} {currentLang.code.toUpperCase()}</span>
+                <ChevronDown size={11} style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+              </button>
+              {langOpen && (
+                <div className="absolute right-0 mt-2 rounded-2xl shadow-lg overflow-hidden z-50"
+                  style={{ background: 'oklch(0.99 0.003 60)', border: '1px solid var(--border)', minWidth: 160 }}>
+                  {LANGS.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setLang(l.code); setLangOpen(false) }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:opacity-80 transition-opacity text-left"
+                      style={{
+                        color: 'var(--foreground)',
+                        background: l.code === lang ? 'oklch(0.64 0.24 5 / 0.08)' : 'transparent',
+                        fontWeight: l.code === lang ? 600 : 400,
+                      }}
+                    >
+                      <span>{l.flag}</span>
+                      <span>{l.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {authLoading ? (
               <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'var(--muted)' }} />
             ) : user ? (
@@ -175,7 +217,7 @@ export default function LandingPage() {
                 <Link href="/dashboard"
                   className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105 shadow-pill"
                   style={{ background: 'var(--gradient-primary)' }}>
-                  {lang === 'hi' ? 'free try karo' : 'try free'}
+                  {baseLang === 'hi' ? 'free try karo' : 'try free'}
                 </Link>
               </>
             )}
@@ -188,17 +230,17 @@ export default function LandingPage() {
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium backdrop-blur"
           style={{ borderColor: 'oklch(0.92 0.015 340 / 0.6)', background: 'oklch(1 0 0 / 0.8)' }}>
           <span className="animate-pulse-glow h-2 w-2 rounded-full bg-green-500" />
-          17,130 {lang === 'hi' ? 'log abhi smarter messages likh rahe hain' : 'people writing smarter right now'}
+          17,130 {baseLang === 'hi' ? 'log abhi smarter messages likh rahe hain' : 'people writing smarter right now'}
         </div>
 
         <h1 className="font-display mt-8 text-6xl leading-[0.95] tracking-tight md:text-8xl" style={{ color: 'var(--foreground)' }}>
-          {lang === 'hi' ? 'Match ho gaya.' : 'You matched.'}
+          {baseLang === 'hi' ? 'Match ho gaya.' : 'You matched.'}
           <br />
-          <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'ab kya?' : 'now what?'}</span>
+          <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'ab kya?' : 'now what?'}</span>
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-lg" style={{ color: 'var(--muted-foreground)' }}>
-          {lang === 'hi'
+          {baseLang === 'hi'
             ? 'Screenshot daalo — FlirtIQ tone padhega, 4 perfect replies dega aur compatibility score batayega. Tinder, Bumble, Hinge, Insta, WhatsApp sab pe kaam karta hai.'
             : 'Upload your chat screenshot — FlirtIQ reads the tone, gives you 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.'}
         </p>
@@ -208,7 +250,7 @@ export default function LandingPage() {
             style={{ background: 'oklch(1 0 0 / 0.8)', borderColor: 'var(--border)' }}>
             <span className="grid h-6 w-6 place-items-center rounded-full text-[10px] font-bold text-white" style={{ background: 'var(--gradient-primary)' }}>AI</span>
             <span className="font-semibold" style={{ color: 'var(--foreground)' }}>10M+</span>
-            <span style={{ color: 'var(--muted-foreground)' }}>{lang === 'hi' ? 'replies bane' : 'replies generated'}</span>
+            <span style={{ color: 'var(--muted-foreground)' }}>{baseLang === 'hi' ? 'replies bane' : 'replies generated'}</span>
           </div>
           <div className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm backdrop-blur"
             style={{ background: 'oklch(1 0 0 / 0.8)', borderColor: 'var(--border)' }}>
@@ -222,12 +264,12 @@ export default function LandingPage() {
           <Link href="/dashboard"
             className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold text-white transition-transform hover:scale-105 shadow-pill"
             style={{ background: 'var(--gradient-primary)' }}>
-            {lang === 'hi' ? 'Free Mein Try Karo' : 'Try It Free'} <span>→</span>
+            {baseLang === 'hi' ? 'Free Mein Try Karo' : 'Try It Free'} <span>→</span>
           </Link>
           <a href="#how"
             className="inline-flex items-center gap-2 rounded-full border px-7 py-3.5 font-semibold backdrop-blur transition-colors"
             style={{ borderColor: 'oklch(0.92 0.015 340 / 0.8)', background: 'oklch(1 0 0 / 0.8)', color: 'var(--foreground)' }}>
-            ▶ {lang === 'hi' ? 'Kaise kaam karta hai' : 'See how it works'}
+            ▶ {baseLang === 'hi' ? 'Kaise kaam karta hai' : 'See how it works'}
           </a>
         </div>
 
@@ -288,7 +330,7 @@ export default function LandingPage() {
       {/* MARQUEE moments */}
       <section className="relative z-10 overflow-hidden py-12">
         <div className="mb-6 text-center text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
-          💬 {lang === 'hi' ? 'sabse common message moments' : 'most common message moments'}
+          💬 {baseLang === 'hi' ? 'sabse common message moments' : 'most common message moments'}
         </div>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24" style={{ background: 'linear-gradient(to right, var(--background), transparent)' }} />
@@ -298,7 +340,7 @@ export default function LandingPage() {
               <div key={i} className="flex shrink-0 items-center gap-3 rounded-2xl border px-5 py-3 backdrop-blur shadow-soft"
                 style={{ background: 'oklch(1 0 0 / 0.9)', borderColor: 'var(--border)' }}>
                 <span className="text-2xl">{m.emoji}</span>
-                <span className="font-medium" style={{ color: 'var(--foreground)' }}>{lang === 'hi' ? m.hi : m.en}</span>
+                <span className="font-medium" style={{ color: 'var(--foreground)' }}>{baseLang === 'hi' ? m.hi : m.en}</span>
                 <span className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white" style={{ background: 'var(--gradient-primary)' }}>{m.tag}</span>
               </div>
             ))}
@@ -311,13 +353,13 @@ export default function LandingPage() {
         <div className="text-center">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>features</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Smart cards.' : 'Warm cards.'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'Real intelligence.' : 'Real intelligence.'}</span>
+            {baseLang === 'hi' ? 'Smart cards.' : 'Warm cards.'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'Real intelligence.' : 'Real intelligence.'}</span>
           </h2>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {FEATURES.map((f) => {
-            const copy = f[lang]
+            const copy = f[baseLang]
             return (
               <div key={f.emoji} className="group relative overflow-hidden rounded-3xl border p-6 backdrop-blur transition-transform hover:-translate-y-1 shadow-soft"
                 style={{ background: 'oklch(1 0 0 / 0.9)', borderColor: 'var(--border)' }}>
@@ -341,8 +383,8 @@ export default function LandingPage() {
         <div className="text-center">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>4 reply styles</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Har chat ke liye' : 'A tone for'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'sahi tone.' : 'every chat.'}</span>
+            {baseLang === 'hi' ? 'Har chat ke liye' : 'A tone for'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'sahi tone.' : 'every chat.'}</span>
           </h2>
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -350,7 +392,7 @@ export default function LandingPage() {
             <div key={s.name} className={`shadow-card rounded-3xl bg-gradient-to-br ${s.color} text-white p-6 transition-transform hover:-translate-y-2`}
               style={{ transform: `rotate(${(i - 1.5) * 1.5}deg)` }}>
               <div className="text-[10px] font-bold tracking-widest opacity-80">{s.name}</div>
-              <p className="font-display mt-4 text-xl leading-snug">&ldquo;{lang === 'hi' ? s.hi : s.en}&rdquo;</p>
+              <p className="font-display mt-4 text-xl leading-snug">&ldquo;{baseLang === 'hi' ? s.hi : s.en}&rdquo;</p>
             </div>
           ))}
         </div>
@@ -359,14 +401,14 @@ export default function LandingPage() {
       {/* HOW IT WORKS */}
       <section id="how" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
         <div className="text-center">
-          <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'kaise kaam karta hai' : 'how it works'}</div>
+          <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'kaise kaam karta hai' : 'how it works'}</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Teen taps mein' : 'Three taps to'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'smooth.' : 'smooth.'}</span>
+            {baseLang === 'hi' ? 'Teen taps mein' : 'Three taps to'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'smooth.' : 'smooth.'}</span>
           </h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {(lang === 'hi'
+          {(baseLang === 'hi'
             ? [
               { n: '01', t: 'Screenshot daalo', d: 'Apna DM snap karo, drag karo. FlirtIQ poora vibe padh leta hai.' },
               { n: '02', t: 'Compatibility score pao', d: 'Tone, intent, interest — 1 se 100 tak score milega.' },
@@ -391,16 +433,16 @@ export default function LandingPage() {
       <section id="demo" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
         <div className="text-center mb-12">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>
-            {lang === 'hi' ? 'live demo' : 'live demo'}
+            {baseLang === 'hi' ? 'live demo' : 'live demo'}
           </div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Screenshot se' : 'From screenshot'}{' '}
+            {baseLang === 'hi' ? 'Screenshot se' : 'From screenshot'}{' '}
             <span className="italic" style={{ color: 'var(--primary)' }}>
-              {lang === 'hi' ? 'perfect reply tak.' : 'to perfect reply.'}
+              {baseLang === 'hi' ? 'perfect reply tak.' : 'to perfect reply.'}
             </span>
           </h2>
           <p className="mt-3 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            {lang === 'hi'
+            {baseLang === 'hi'
               ? 'Real chat — FlirtIQ ka real output. Koi editing nahi.'
               : 'Real chat. Real FlirtIQ output. No editing.'}
           </p>
@@ -411,7 +453,7 @@ export default function LandingPage() {
           <div>
             <div className="text-xs font-bold tracking-widest uppercase mb-3 flex items-center gap-2" style={{ color: 'var(--muted-foreground)' }}>
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px]" style={{ background: 'var(--muted-foreground)' }}>1</span>
-              {lang === 'hi' ? 'Aapka screenshot' : 'Your screenshot'}
+              {baseLang === 'hi' ? 'Aapka screenshot' : 'Your screenshot'}
             </div>
             <div className="rounded-3xl overflow-hidden shadow-card" style={{ background: 'oklch(0.14 0.02 260)', border: '1px solid oklch(0.25 0.02 260)' }}>
               {/* App header */}
@@ -459,14 +501,14 @@ export default function LandingPage() {
           <div>
             <div className="text-xs font-bold tracking-widest uppercase mb-3 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px]" style={{ background: 'var(--gradient-primary)' }}>2</span>
-              {lang === 'hi' ? 'FlirtIQ ka output' : 'FlirtIQ output'}
+              {baseLang === 'hi' ? 'FlirtIQ ka output' : 'FlirtIQ output'}
             </div>
             <div className="space-y-3">
               {[
-                { label: 'AURA',      color: 'oklch(0.6 0.22 290)', bg: 'oklch(0.97 0.015 290)', border: 'oklch(0.88 0.06 290)', reply: lang === 'hi' ? "Popcorn toh bahana hai, date banana asli challenge hai 😏" : "Popcorn's just the excuse. The real challenge is making a date happen 😏" },
-                { label: 'COOL',      color: 'oklch(0.6 0.17 220)', bg: 'oklch(0.97 0.012 220)', border: 'oklch(0.88 0.05 220)', reply: lang === 'hi' ? "Salt & vinegar chips. Boring choices allowed nahi mujhe 😅" : "Salt & vinegar chips. No boring snack choices allowed around me 😅" },
-                { label: 'BOLD',      color: 'oklch(0.65 0.2 40)',  bg: 'oklch(0.98 0.02 50)',   border: 'oklch(0.9 0.09 60)',   reply: lang === 'hi' ? "Settle it over Dune + nachos — Friday khaali hai?" : "Settle it over Dune + nachos. Friday free?" },
-                { label: 'GENTLEMAN', color: 'oklch(0.64 0.24 5)',  bg: 'oklch(0.98 0.015 10)',  border: 'oklch(0.88 0.08 5)',   reply: lang === 'hi' ? "Honestly you just sold me on Dune. Kab dekhein?" : "Honestly you just sold me on Dune. When are we watching?" },
+                { label: 'AURA',      color: 'oklch(0.6 0.22 290)', bg: 'oklch(0.97 0.015 290)', border: 'oklch(0.88 0.06 290)', reply: baseLang === 'hi' ? "Popcorn toh bahana hai, date banana asli challenge hai 😏" : "Popcorn's just the excuse. The real challenge is making a date happen 😏" },
+                { label: 'COOL',      color: 'oklch(0.6 0.17 220)', bg: 'oklch(0.97 0.012 220)', border: 'oklch(0.88 0.05 220)', reply: baseLang === 'hi' ? "Salt & vinegar chips. Boring choices allowed nahi mujhe 😅" : "Salt & vinegar chips. No boring snack choices allowed around me 😅" },
+                { label: 'BOLD',      color: 'oklch(0.65 0.2 40)',  bg: 'oklch(0.98 0.02 50)',   border: 'oklch(0.9 0.09 60)',   reply: baseLang === 'hi' ? "Settle it over Dune + nachos — Friday khaali hai?" : "Settle it over Dune + nachos. Friday free?" },
+                { label: 'GENTLEMAN', color: 'oklch(0.64 0.24 5)',  bg: 'oklch(0.98 0.015 10)',  border: 'oklch(0.88 0.08 5)',   reply: baseLang === 'hi' ? "Honestly you just sold me on Dune. Kab dekhein?" : "Honestly you just sold me on Dune. When are we watching?" },
               ].map(card => (
                 <div key={card.label} className="rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3"
                   style={{ background: card.bg, border: `1px solid ${card.border}` }}>
@@ -497,7 +539,7 @@ export default function LandingPage() {
           <Link href="/dashboard"
             className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold text-white transition-transform hover:scale-105 shadow-pill"
             style={{ background: 'var(--gradient-primary)' }}>
-            {lang === 'hi' ? 'Apna chat analyze karo' : 'Analyze your own chat'} <span>→</span>
+            {baseLang === 'hi' ? 'Apna chat analyze karo' : 'Analyze your own chat'} <span>→</span>
           </Link>
         </div>
       </section>
@@ -507,8 +549,8 @@ export default function LandingPage() {
         <div className="text-center mb-12">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>loved by daters</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Real results,' : 'Real results,'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'real dates.' : 'real dates.'}</span>
+            {baseLang === 'hi' ? 'Real results,' : 'Real results,'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'real dates.' : 'real dates.'}</span>
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
@@ -537,16 +579,16 @@ export default function LandingPage() {
             {/* Left: text */}
             <div className="p-10 md:p-14 flex flex-col justify-center">
               <div className="text-sm font-semibold tracking-widest uppercase mb-4" style={{ color: 'var(--primary)' }}>
-                📱 {lang === 'hi' ? 'App download karo' : 'Get the app'}
+                📱 {baseLang === 'hi' ? 'App download karo' : 'Get the app'}
               </div>
               <h2 className="font-display text-4xl md:text-5xl tracking-tight mb-4" style={{ color: 'var(--foreground)' }}>
-                {lang === 'hi' ? 'Kahin bhi,\n' : 'Your co-pilot,\n'}
+                {baseLang === 'hi' ? 'Kahin bhi,\n' : 'Your co-pilot,\n'}
                 <span className="italic" style={{ color: 'var(--primary)' }}>
-                  {lang === 'hi' ? 'kisi bhi waqt.' : 'everywhere.'}
+                  {baseLang === 'hi' ? 'kisi bhi waqt.' : 'everywhere.'}
                 </span>
               </h2>
               <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--muted-foreground)' }}>
-                {lang === 'hi'
+                {baseLang === 'hi'
                   ? 'FlirtIQ ab aapke phone par available hai. Tinder, Bumble ya WhatsApp se screenshot lo aur seedha app mein analyze karo.'
                   : 'FlirtIQ is available on your phone. Screenshot directly from Tinder, Bumble, or WhatsApp and analyze without switching apps.'}
               </p>
@@ -562,7 +604,7 @@ export default function LandingPage() {
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                   </svg>
                   <div>
-                    <div className="text-[10px] opacity-70 leading-none">{lang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
+                    <div className="text-[10px] opacity-70 leading-none">{baseLang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
                     <div className="text-base font-bold leading-tight">App Store</div>
                   </div>
                 </a>
@@ -576,7 +618,7 @@ export default function LandingPage() {
                     <path d="M3.18 23.76c.3.17.64.24.99.2l12.23-12.24L13 8.32 3.18 23.76zM20.72 9.58l-3.06-1.76-3.4 3.4 3.4 3.4 3.09-1.78c.88-.51.88-1.75-.03-2.26zM2.1.49C1.82.64 1.65.95 1.65 1.37v21.26c0 .42.17.73.46.88L14.1 11.55 2.1.49zM16.34 3.4L4.12.2c-.35-.1-.68-.03-.99.14L15.99 11.2l.35-.35L16.34 3.4z"/>
                   </svg>
                   <div>
-                    <div className="text-[10px] opacity-70 leading-none">{lang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
+                    <div className="text-[10px] opacity-70 leading-none">{baseLang === 'hi' ? 'Coming Soon on' : 'Coming Soon on'}</div>
                     <div className="text-base font-bold leading-tight">Google Play</div>
                   </div>
                 </a>
@@ -584,7 +626,7 @@ export default function LandingPage() {
 
               {/* PWA install note */}
               <p className="mt-5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                {lang === 'hi'
+                {baseLang === 'hi'
                   ? '💡 Abhi ke liye: browser mein "Add to Home Screen" karke install karo — bilkul app jaisi feel hai.'
                   : '💡 Right now: tap "Add to Home Screen" in your browser to install — works exactly like a native app.'}
               </p>
@@ -652,19 +694,19 @@ export default function LandingPage() {
         <div className="text-center mb-12">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>pricing</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight md:text-6xl" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Simple pricing.' : 'Simple pricing.'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'Koi hidden fees nahi.' : 'No hidden fees.'}</span>
+            {baseLang === 'hi' ? 'Simple pricing.' : 'Simple pricing.'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'Koi hidden fees nahi.' : 'No hidden fees.'}</span>
           </h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {PLANS.map((plan) => {
-            const p = plan[lang]
+            const p = plan[baseLang]
             return (
               <div key={plan.key} className={`relative rounded-3xl border p-6 shadow-soft backdrop-blur transition-transform hover:-translate-y-1 ${plan.popular ? 'ring-2' : ''}`}
                 style={{ background: 'oklch(1 0 0 / 0.9)', borderColor: 'var(--border)', ...(plan.popular ? { ringColor: 'var(--primary)' } : {}) }}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background: 'var(--gradient-primary)' }}>
-                    {lang === 'hi' ? 'POPULAR' : 'POPULAR'}
+                    {baseLang === 'hi' ? 'POPULAR' : 'POPULAR'}
                   </div>
                 )}
                 <div className="text-2xl font-extrabold mt-2" style={{ color: 'var(--foreground)' }}>{p.price}</div>
@@ -687,8 +729,8 @@ export default function LandingPage() {
         <div className="text-center mb-12">
           <div className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'var(--primary)' }}>faq</div>
           <h2 className="font-display mt-3 text-5xl tracking-tight" style={{ color: 'var(--foreground)' }}>
-            {lang === 'hi' ? 'Common sawaal.' : 'Common questions.'}{' '}
-            <span className="italic" style={{ color: 'var(--primary)' }}>{lang === 'hi' ? 'Simple jawab.' : 'Simple answers.'}</span>
+            {baseLang === 'hi' ? 'Common sawaal.' : 'Common questions.'}{' '}
+            <span className="italic" style={{ color: 'var(--primary)' }}>{baseLang === 'hi' ? 'Simple jawab.' : 'Simple answers.'}</span>
           </h2>
         </div>
         <div className="space-y-3">
@@ -714,17 +756,17 @@ export default function LandingPage() {
           <div className="absolute -top-20 -left-20 text-9xl opacity-10">💗</div>
           <div className="absolute -right-12 -bottom-16 text-9xl opacity-10">✨</div>
           <h2 className="font-display relative text-5xl md:text-7xl">
-            {lang === 'hi' ? 'Keyboard ghurna band karo.' : 'Stop staring at the keyboard.'}
+            {baseLang === 'hi' ? 'Keyboard ghurna band karo.' : 'Stop staring at the keyboard.'}
             <br />
-            <span className="italic">{lang === 'hi' ? 'Date pakki karo.' : 'Start a date.'}</span>
+            <span className="italic">{baseLang === 'hi' ? 'Date pakki karo.' : 'Start a date.'}</span>
           </h2>
           <p className="relative mx-auto mt-5 max-w-lg opacity-90">
-            {lang === 'hi' ? 'Free mein shuru karo. Koi card nahi. Har app pe kaam karta hai.' : 'Free to start. No card. Works on every app you already use.'}
+            {baseLang === 'hi' ? 'Free mein shuru karo. Koi card nahi. Har app pe kaam karta hai.' : 'Free to start. No card. Works on every app you already use.'}
           </p>
           <Link href="/dashboard"
             className="relative mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 font-bold transition-transform hover:scale-105 shadow-pill"
             style={{ color: 'var(--primary)' }}>
-            {lang === 'hi' ? 'FlirtIQ Free Try Karo' : 'Try FlirtIQ Free'} <span>→</span>
+            {baseLang === 'hi' ? 'FlirtIQ Free Try Karo' : 'Try FlirtIQ Free'} <span>→</span>
           </Link>
         </div>
       </section>
@@ -739,7 +781,7 @@ export default function LandingPage() {
                 <span className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>FlirtIQ</span>
               </div>
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                {lang === 'hi' ? 'Perfect message likhne ka AI assistant.' : 'AI dating assistant for perfect replies.'}
+                {baseLang === 'hi' ? 'Perfect message likhne ka AI assistant.' : 'AI dating assistant for perfect replies.'}
               </p>
             </div>
             <div>

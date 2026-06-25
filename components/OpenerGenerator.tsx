@@ -2,9 +2,13 @@
 
 import { useState } from 'react'
 import { Sparkles, AlertCircle, Copy, Check, Lightbulb, Heart, Zap, Flame, RefreshCw, CopyCheck } from 'lucide-react'
-import { useLanguage } from '@/lib/language'
+import { useLanguage, type Lang } from '@/lib/language'
 
-const copy = {
+const copy: Record<Lang, {
+  nameLbl: string; optional: string; platformLbl: string; selectPlatform: string
+  bioLbl: string; interestsLbl: string; photoLbl: string; emptyError: string
+  generating: string; cta: string; resultsTitle: string; tip: string
+}> = {
   en: {
     nameLbl: 'Their name', optional: '(optional)', platformLbl: 'Platform',
     selectPlatform: 'Select a platform…', bioLbl: 'Their bio / about section',
@@ -16,10 +20,74 @@ const copy = {
   hi: {
     nameLbl: 'Unka naam', optional: '(optional)', platformLbl: 'Platform',
     selectPlatform: 'Platform choose karo…', bioLbl: 'Unka bio / about section',
-    interestsLbl: 'Interests / hobbies',  photoLbl: 'Profile photo kaisi hai',
+    interestsLbl: 'Interests / hobbies', photoLbl: 'Profile photo kaisi hai',
     emptyError: 'Kam se kam ek detail daalo match ke baare mein.',
     generating: 'Openers ban rahe hain…', cta: 'Opener Likho',
     resultsTitle: 'Tumhare 4 Opening Lines', tip: 'Conversation Tip',
+  },
+  es: {
+    nameLbl: 'Su nombre', optional: '(opcional)', platformLbl: 'Plataforma',
+    selectPlatform: 'Elige una plataforma…', bioLbl: 'Su bio / sección acerca de',
+    interestsLbl: 'Intereses / hobbies', photoLbl: 'Descripción de la foto de perfil',
+    emptyError: 'Añade al menos un detalle sobre tu match para obtener openers personalizados.',
+    generating: 'Creando openers…', cta: 'Escribir mi Opener',
+    resultsTitle: 'Tus 4 Frases de Apertura', tip: 'Consejo de Conversación',
+  },
+  fr: {
+    nameLbl: 'Son prénom', optional: '(optionnel)', platformLbl: 'Plateforme',
+    selectPlatform: 'Choisir une plateforme…', bioLbl: 'Sa bio / section à propos',
+    interestsLbl: "Centres d'intérêt / loisirs", photoLbl: 'Description de la photo de profil',
+    emptyError: 'Ajoute au moins un détail sur ton match pour obtenir des openers personnalisés.',
+    generating: 'Création des openers…', cta: 'Écrire mon Opener',
+    resultsTitle: "Vos 4 Phrases d'Accroche", tip: 'Conseil de Conversation',
+  },
+  pt: {
+    nameLbl: 'Nome dele/a', optional: '(opcional)', platformLbl: 'Plataforma',
+    selectPlatform: 'Escolha uma plataforma…', bioLbl: 'Bio / seção sobre',
+    interestsLbl: 'Interesses / hobbies', photoLbl: 'Descrição da foto de perfil',
+    emptyError: 'Adicione pelo menos um detalhe sobre seu match para obter openers personalizados.',
+    generating: 'Criando openers…', cta: 'Escrever meu Opener',
+    resultsTitle: 'Seus 4 Openers', tip: 'Dica de Conversa',
+  },
+  ar: {
+    nameLbl: 'اسمه/ا', optional: '(اختياري)', platformLbl: 'المنصة',
+    selectPlatform: 'اختر منصة…', bioLbl: 'السيرة الذاتية / قسم عنه/ا',
+    interestsLbl: 'الاهتمامات والهوايات', photoLbl: 'وصف صورة الملف الشخصي',
+    emptyError: 'أضف تفصيلاً واحداً على الأقل عن مطابقتك للحصول على رسائل مخصصة.',
+    generating: 'جاري إنشاء الرسائل…', cta: 'اكتب رسالتي الأولى',
+    resultsTitle: 'رسائلك الافتتاحية الـ4', tip: 'نصيحة المحادثة',
+  },
+  de: {
+    nameLbl: 'Ihr/Sein Name', optional: '(optional)', platformLbl: 'Plattform',
+    selectPlatform: 'Plattform auswählen…', bioLbl: 'Bio / Über mich-Abschnitt',
+    interestsLbl: 'Interessen / Hobbys', photoLbl: 'Beschreibung des Profilfotos',
+    emptyError: 'Füge mindestens ein Detail über dein Match hinzu, um personalisierte Openers zu erhalten.',
+    generating: 'Openers werden erstellt…', cta: 'Meinen Opener schreiben',
+    resultsTitle: 'Deine 4 Eröffnungszeilen', tip: 'Gesprächstipp',
+  },
+  zh: {
+    nameLbl: '对方名字', optional: '（可选）', platformLbl: '平台',
+    selectPlatform: '选择平台…', bioLbl: '对方的简介',
+    interestsLbl: '兴趣爱好', photoLbl: '头像照片描述',
+    emptyError: '请至少添加一条关于你的匹配对象的信息，以获得个性化的开场白。',
+    generating: '正在生成开场白…', cta: '生成我的开场白',
+    resultsTitle: '你的4条开场白', tip: '对话建议',
+  },
+  ja: {
+    nameLbl: '相手の名前', optional: '（任意）', platformLbl: 'プラットフォーム',
+    selectPlatform: 'プラットフォームを選択…', bioLbl: '相手のプロフィール',
+    interestsLbl: '趣味・興味', photoLbl: 'プロフィール写真の説明',
+    emptyError: '個性的なオープナーのために、マッチ相手の情報を1つ以上入力してください。',
+    generating: 'オープナーを作成中…', cta: 'オープナーを書く',
+    resultsTitle: 'あなたの4つの始め方', tip: '会話のヒント',
+  },
+  ko: {
+    nameLbl: '상대방 이름', optional: '(선택사항)', platformLbl: '플랫폼',
+    selectPlatform: '플랫폼 선택…', bioLbl: '상대방 프로필/소개',
+    interestsLbl: '관심사 / 취미', photoLbl: '프로필 사진 설명',
+    emptyError: '개인화된 오프너를 받으려면 상대방에 대한 정보를 하나 이상 추가하세요.',
+    generating: '오프너 작성 중…', cta: '내 오프너 작성',
+    resultsTitle: '나의 4가지 오프너', tip: '대화 팁',
   },
 }
 
@@ -268,7 +336,7 @@ export default function OpenerGenerator({ accessToken, onUsageUpdate, onCreditUs
           {result.tip && (
             <div className="rounded-2xl p-6 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
               <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-                <Lightbulb size={17} style={{ color: 'oklch(0.7 0.19 55)' }} /> Conversation Tip
+                <Lightbulb size={17} style={{ color: 'oklch(0.7 0.19 55)' }} /> {c.tip}
               </h3>
               <div className="rounded-xl p-4" style={{ background: 'oklch(0.7 0.19 55 / 0.06)', border: '1px solid oklch(0.7 0.19 55 / 0.25)' }}>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>{result.tip}</p>

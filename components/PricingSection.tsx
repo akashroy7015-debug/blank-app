@@ -2,27 +2,25 @@
 
 import { useState } from 'react'
 import { Check, Crown, Zap, Star, Coins } from 'lucide-react'
-import { useLanguage } from '@/lib/language'
+import { useLanguage, type Lang } from '@/lib/language'
 import { createBrowserClient } from '@/lib/supabase'
 
-const copy = {
-  en: {
-    badge: 'Pricing',
-    heading: 'Simple, Honest Pricing',
-    sub: "Start free. Upgrade when you're ready. No hidden fees.",
-    popular: 'POPULAR',
-    bestValue: 'BEST VALUE',
-    loading: 'Loading...',
-  },
-  hi: {
-    badge: 'Pricing',
-    heading: 'Seedhi, Saaf Pricing',
-    sub: 'Free mein shuru karo. Jab date pakki ho jaye, tab upgrade karna. Koi hidden fees nahi, koi lock-in nahi.',
-    popular: 'POPULAR',
-    bestValue: 'BEST VALUE',
-    loading: 'Loading...',
-  },
+const copy: Record<Lang, { badge: string; heading: string; sub: string; popular: string; bestValue: string; loading: string; chooseAmount: string; perCredit: string; buyCredits: (n: number) => string }> = {
+  en: { badge: 'Pricing', heading: 'Simple, Honest Pricing', sub: "Start free. Upgrade when you're ready. No hidden fees.", popular: 'POPULAR', bestValue: 'BEST VALUE', loading: 'Loading...', chooseAmount: 'Or choose your own amount', perCredit: '$1.00 per credit', buyCredits: n => `Buy ${n} Credits` },
+  hi: { badge: 'Pricing', heading: 'Seedhi, Saaf Pricing', sub: 'Free mein shuru karo. Jab date pakki ho jaye, tab upgrade karna. Koi hidden fees nahi.', popular: 'POPULAR', bestValue: 'BEST VALUE', loading: 'Loading...', chooseAmount: 'Khud choose karo kitne credits chahiye', perCredit: '$1.00 per credit', buyCredits: n => `${n} Credits Kharido` },
+  es: { badge: 'Precios', heading: 'Precios Simples y Honestos', sub: 'Empieza gratis. Mejora cuando estés listo. Sin cargos ocultos.', popular: 'POPULAR', bestValue: 'MEJOR VALOR', loading: 'Cargando...', chooseAmount: 'O elige tu propia cantidad', perCredit: '$1.00 por crédito', buyCredits: n => `Comprar ${n} Créditos` },
+  fr: { badge: 'Tarifs', heading: 'Tarifs Simples et Honnêtes', sub: 'Commence gratuitement. Améliore quand tu es prêt. Pas de frais cachés.', popular: 'POPULAIRE', bestValue: 'MEILLEUR RAPPORT', loading: 'Chargement...', chooseAmount: 'Ou choisis ta propre quantité', perCredit: '1,00 $ par crédit', buyCredits: n => `Acheter ${n} Crédits` },
+  pt: { badge: 'Preços', heading: 'Preços Simples e Honestos', sub: 'Comece grátis. Melhore quando estiver pronto. Sem taxas ocultas.', popular: 'POPULAR', bestValue: 'MELHOR VALOR', loading: 'Carregando...', chooseAmount: 'Ou escolha sua própria quantidade', perCredit: 'R$ 1,00 por crédito', buyCredits: n => `Comprar ${n} Créditos` },
+  ar: { badge: 'الأسعار', heading: 'أسعار بسيطة وصادقة', sub: 'ابدأ مجاناً. قم بالترقية عندما تكون مستعداً. بدون رسوم خفية.', popular: 'الأكثر شعبية', bestValue: 'أفضل قيمة', loading: 'جاري التحميل...', chooseAmount: 'أو اختر كميتك الخاصة', perCredit: 'دولار واحد لكل رصيد', buyCredits: n => `اشترِ ${n} رصيداً` },
+  de: { badge: 'Preise', heading: 'Einfache, Ehrliche Preise', sub: 'Starte kostenlos. Upgrade wann du bereit bist. Keine versteckten Gebühren.', popular: 'BELIEBT', bestValue: 'BESTES ANGEBOT', loading: 'Laden...', chooseAmount: 'Oder wähle deine eigene Menge', perCredit: '1,00 $ pro Credit', buyCredits: n => `${n} Credits kaufen` },
+  zh: { badge: '定价', heading: '简单透明的定价', sub: '免费开始。准备好了再升级。没有隐藏费用。', popular: '热门', bestValue: '最超值', loading: '加载中...', chooseAmount: '或选择自定义数量', perCredit: '每积分 $1.00', buyCredits: n => `购买 ${n} 积分` },
+  ja: { badge: '料金', heading: 'シンプルで誠実な料金体系', sub: '無料で始める。準備ができたらアップグレード。隠れた費用なし。', popular: '人気', bestValue: '最高コスパ', loading: '読み込み中...', chooseAmount: '自分で数量を選択', perCredit: 'クレジットあたり $1.00', buyCredits: n => `${n} クレジットを購入` },
+  ko: { badge: '요금제', heading: '간단하고 정직한 요금제', sub: '무료로 시작하세요. 준비되면 업그레이드하세요. 숨겨진 요금 없음.', popular: '인기', bestValue: '최고 가치', loading: '로딩 중...', chooseAmount: '직접 수량 선택', perCredit: '크레딧당 $1.00', buyCredits: n => `크레딧 ${n}개 구매` },
 }
+
+type PlanLang = 'en' | 'hi'
+// Per-plan text only in EN/HI; other languages fall back to English
+const getPlanLang = (lang: Lang): PlanLang => lang === 'hi' ? 'hi' : 'en'
 
 const PLANS = [
   {
@@ -61,6 +59,7 @@ export default function PricingSection() {
   const [customCredits, setCustomCredits] = useState(25)
   const { lang } = useLanguage()
   const c = copy[lang]
+  const planLang = getPlanLang(lang)
 
   const handleCheckout = async (plan: string, quantity?: number) => {
     setLoadingPlan(plan)
@@ -108,7 +107,7 @@ export default function PricingSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {PLANS.map((plan) => {
             const Icon = plan.icon
-            const p = plan[lang]
+            const p = plan[planLang]
             const badgeLabel = getBadgeLabel(plan.badge)
             return (
               <div
@@ -188,11 +187,11 @@ export default function PricingSection() {
           <div className="max-w-sm mx-auto rounded-2xl p-6 text-center"
             style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <p className="text-sm font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
-              {lang === 'hi' ? 'Khud choose karo kitne credits chahiye' : 'Or choose your own amount'}
+              {c.chooseAmount}
             </p>
             <div className="flex items-center gap-3 mb-2">
               <button
-                onClick={() => setCustomCredits(c => Math.max(1, c - 1))}
+                onClick={() => setCustomCredits(n => Math.max(1, n - 1))}
                 className="w-9 h-9 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:opacity-80"
                 style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
                 −
@@ -207,14 +206,14 @@ export default function PricingSection() {
                 style={{ color: 'var(--foreground)', border: '1px solid var(--border)' }}
               />
               <button
-                onClick={() => setCustomCredits(c => Math.min(10000, c + 1))}
+                onClick={() => setCustomCredits(n => Math.min(10000, n + 1))}
                 className="w-9 h-9 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:opacity-80"
                 style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
                 +
               </button>
             </div>
             <p className="text-xs mb-4" style={{ color: 'var(--muted-foreground)' }}>
-              ${(customCredits * 1).toFixed(2)} · $1.00 per credit
+              ${(customCredits * 1).toFixed(2)} · {c.perCredit}
             </p>
             <button
               onClick={() => handleCheckout('credits_custom', customCredits)}
@@ -224,9 +223,9 @@ export default function PricingSection() {
               {loadingPlan === 'credits_custom' ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                  Loading...
+                  {c.loading}
                 </span>
-              ) : lang === 'hi' ? `${customCredits} Credits Kharido` : `Buy ${customCredits} Credits`}
+              ) : c.buyCredits(customCredits)}
             </button>
           </div>
         </div>
