@@ -8,6 +8,46 @@ import { FREE_LIMIT } from '@/lib/usage'
 import { Sparkles, AlertCircle, Crown, Infinity, Coins, Lock, ImageIcon, MessageSquarePlus, Camera, CalendarDays, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
+import { useLanguage } from '@/lib/language'
+
+const dashCopy = {
+  en: {
+    badge: 'AI Dating Coach',
+    analyzeTitle: 'Analyze Your', analyzeSpan: 'Chat',
+    openerTitle: 'Write an', openerSpan: 'Opener',
+    analyzeDesc: 'Upload a screenshot to get 4 perfect replies, a compatibility score, and expert strategy',
+    openerDesc: "Describe your match's profile and get 4 personalized opening lines — no screenshot needed",
+    analyzeMode: 'Analyze Chat', openerMode: 'Write Opener',
+    accountStatus: 'Account Status', upgrade: 'Upgrade',
+    plan: 'Plan', renewsIn: 'Renews in', resetsIn: 'Resets in',
+    analyses: 'Analyses', credits: 'Credits', freeLeft: 'Free left',
+    limitMsg: 'Daily limit reached — buy credits or upgrade to continue',
+    getCredits: 'Get Credits',
+    loginTitle: 'Create a free account to start',
+    loginDesc: 'Sign up free to get 3 analyses every day — no card required.',
+    signUp: 'Sign Up Free', logIn: 'Log In',
+    hint: 'Try uploading any chat screenshot from Tinder, Bumble, Hinge, Instagram DMs, or WhatsApp.',
+    analyzing: 'Analyzing...', analyzeCta: 'Analyze My Chat',
+  },
+  hi: {
+    badge: 'AI Dating Coach',
+    analyzeTitle: 'Analyze Karo Apna', analyzeSpan: 'Chat',
+    openerTitle: 'Likho Ek', openerSpan: 'Opener',
+    analyzeDesc: 'Screenshot upload karo — 4 perfect replies, compatibility score aur expert strategy pao',
+    openerDesc: 'Match ka profile describe karo aur 4 personalized opening lines pao — koi screenshot nahi chahiye',
+    analyzeMode: 'Chat Analyze', openerMode: 'Opener Likho',
+    accountStatus: 'Account Status', upgrade: 'Upgrade Karo',
+    plan: 'Plan', renewsIn: 'Renew hoga', resetsIn: 'Reset hoga',
+    analyses: 'Analyses', credits: 'Credits', freeLeft: 'Free bache',
+    limitMsg: 'Aaj ki limit khatam — credits kharido ya upgrade karo',
+    getCredits: 'Credits Lo',
+    loginTitle: 'Free account banao shuru karne ke liye',
+    loginDesc: 'Free signup karo aur roz 3 analyses pao — koi card nahi chahiye.',
+    signUp: 'Free Signup', logIn: 'Log In',
+    hint: 'Koi bhi chat screenshot upload karo — Tinder, Bumble, Hinge, Instagram DMs, ya WhatsApp.',
+    analyzing: 'Analyze ho raha hai...', analyzeCta: 'Mera Chat Analyze Karo',
+  },
+}
 
 type Mode = 'analyze' | 'opener'
 
@@ -19,8 +59,6 @@ interface AnalysisResultData {
   freeTierCount?: number
 }
 
-// Sample demo image URL — a public placeholder chat screenshot for first-time users
-const SAMPLE_HINT = 'Try uploading any chat screenshot from Tinder, Bumble, Hinge, Instagram DMs, or WhatsApp.'
 
 export default function DashboardPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -40,6 +78,8 @@ export default function DashboardPage() {
   const [mode, setMode] = useState<Mode>('analyze')
   const [plan, setPlan] = useState<string | null>(null)
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
+  const { lang } = useLanguage()
+  const dc = dashCopy[lang]
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -177,17 +217,15 @@ export default function DashboardPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
             style={{ background: 'oklch(0.64 0.24 5 / 0.1)', color: 'var(--primary)', border: '1px solid oklch(0.64 0.24 5 / 0.2)' }}>
-            <Sparkles size={14} /> AI Dating Coach
+            <Sparkles size={14} /> {dc.badge}
           </div>
           <h1 className="font-display text-4xl md:text-5xl mb-4" style={{ color: 'var(--foreground)' }}>
             {mode === 'analyze'
-              ? <>Analyze Your <span className="italic" style={{ color: 'var(--primary)' }}>Chat</span></>
-              : <>Write an <span className="italic" style={{ color: 'var(--primary)' }}>Opener</span></>}
+              ? <>{dc.analyzeTitle} <span className="italic" style={{ color: 'var(--primary)' }}>{dc.analyzeSpan}</span></>
+              : <>{dc.openerTitle} <span className="italic" style={{ color: 'var(--primary)' }}>{dc.openerSpan}</span></>}
           </h1>
           <p className="text-lg mb-6" style={{ color: 'var(--muted-foreground)' }}>
-            {mode === 'analyze'
-              ? 'Upload a screenshot to get 4 perfect replies, a compatibility score, and expert strategy'
-              : "Describe your match's profile and get 4 personalized opening lines — no screenshot needed"}
+            {mode === 'analyze' ? dc.analyzeDesc : dc.openerDesc}
           </p>
 
           {/* Mode switcher */}
@@ -198,7 +236,7 @@ export default function DashboardPage() {
               style={mode === 'analyze'
                 ? { background: 'white', color: 'var(--foreground)', boxShadow: '0 2px 8px oklch(0 0 0 / 0.1)' }
                 : { color: 'var(--muted-foreground)' }}>
-              <Camera size={15} /> Analyze Chat
+              <Camera size={15} /> {dc.analyzeMode}
             </button>
             <button
               onClick={() => setMode('opener')}
@@ -206,7 +244,7 @@ export default function DashboardPage() {
               style={mode === 'opener'
                 ? { background: 'white', color: 'var(--foreground)', boxShadow: '0 2px 8px oklch(0 0 0 / 0.1)' }
                 : { color: 'var(--muted-foreground)' }}>
-              <MessageSquarePlus size={15} /> Write Opener
+              <MessageSquarePlus size={15} /> {dc.openerMode}
             </button>
           </div>
         </div>
@@ -230,21 +268,21 @@ export default function DashboardPage() {
               <Lock size={24} style={{ color: 'var(--primary)' }} />
             </div>
             <h2 className="font-display text-2xl md:text-3xl mb-3" style={{ color: 'var(--foreground)' }}>
-              Create a free account to start
+              {dc.loginTitle}
             </h2>
             <p className="text-sm md:text-base mb-7 max-w-md mx-auto" style={{ color: 'var(--muted-foreground)' }}>
-              Sign up free to get <strong>3 analyses every day</strong> — no card required. Your usage and credits stay synced to your account across all your devices.
+              {dc.loginDesc}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/auth/signup"
                 className="w-full sm:w-auto rounded-full px-7 py-3 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105"
                 style={{ background: 'var(--gradient-primary)' }}>
-                Sign Up Free
+                {dc.signUp}
               </Link>
               <Link href="/auth/login"
                 className="w-full sm:w-auto rounded-full px-7 py-3 text-sm font-semibold transition-all hover:opacity-80"
                 style={{ background: 'var(--muted)', color: 'var(--foreground)' }}>
-                Log In
+                {dc.logIn}
               </Link>
             </div>
           </div>
@@ -253,12 +291,12 @@ export default function DashboardPage() {
             {/* Account Status Card */}
             <div className="mb-6 rounded-2xl p-5 shadow-soft" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Account Status</h2>
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{dc.accountStatus}</h2>
                 {!isSubscribed && (
                   <Link href="/pricing"
                     className="text-xs font-semibold rounded-full px-3 py-1.5 text-white shadow-pill transition-transform hover:scale-105"
                     style={{ background: 'var(--gradient-primary)' }}>
-                    Upgrade
+                    {dc.upgrade}
                   </Link>
                 )}
               </div>
@@ -268,7 +306,7 @@ export default function DashboardPage() {
                   <div className="flex justify-center mb-1.5">
                     <Crown size={16} style={{ color: isSubscribed ? 'var(--primary)' : 'var(--muted-foreground)' }} />
                   </div>
-                  <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Plan</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>{dc.plan}</p>
                   <p className="font-bold text-sm capitalize" style={{ color: 'var(--foreground)' }}>
                     {isSubscribed && plan ? plan.charAt(0).toUpperCase() + plan.slice(1) + ' Pro' : 'Free'}
                   </p>
@@ -280,7 +318,7 @@ export default function DashboardPage() {
                     <CalendarDays size={16} style={{ color: isSubscribed ? 'var(--primary)' : 'var(--muted-foreground)' }} />
                   </div>
                   <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
-                    {isSubscribed ? 'Renews in' : 'Resets in'}
+                    {isSubscribed ? dc.renewsIn : dc.resetsIn}
                   </p>
                   <p className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>
                     {isSubscribed && periodEnd
@@ -309,7 +347,7 @@ export default function DashboardPage() {
                         : <Zap size={16} style={{ color: 'var(--muted-foreground)' }} />}
                   </div>
                   <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
-                    {isSubscribed ? 'Analyses' : credits > 0 ? 'Credits' : 'Free left'}
+                    {isSubscribed ? dc.analyses : credits > 0 ? dc.credits : dc.freeLeft}
                   </p>
                   <p className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>
                     {isSubscribed ? '∞' : credits > 0 ? credits : `${remaining}/${FREE_LIMIT}`}
@@ -325,13 +363,13 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3">
                   <AlertCircle size={19} style={{ color: 'oklch(0.577 0.245 27.325)', flexShrink: 0 }} />
                   <p className="font-medium text-sm" style={{ color: 'oklch(0.577 0.245 27.325)' }}>
-                    Daily limit reached — buy credits or upgrade to continue
+                    {dc.limitMsg}
                   </p>
                 </div>
                 <Link href="/pricing"
                   className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow-pill transition-transform hover:scale-105 shrink-0"
                   style={{ background: 'var(--gradient-primary)' }}>
-                  Get Credits
+                  {dc.getCredits}
                 </Link>
               </div>
             )}
@@ -344,7 +382,7 @@ export default function DashboardPage() {
                   {!imageFile && !result && (
                     <div className="mt-4 flex items-start gap-2">
                       <ImageIcon size={14} style={{ color: 'var(--muted-foreground)', flexShrink: 0, marginTop: 2 }} />
-                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{SAMPLE_HINT}</p>
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{dc.hint}</p>
                     </div>
                   )}
 
@@ -363,9 +401,9 @@ export default function DashboardPage() {
                       ? { background: 'var(--muted)', color: 'var(--muted-foreground)' }
                       : { background: 'var(--gradient-primary)', color: 'white' }}>
                     {isAnalyzing ? (
-                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
+                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {dc.analyzing}</>
                     ) : (
-                      <><Sparkles size={19} /> Analyze My Chat</>
+                      <><Sparkles size={19} /> {dc.analyzeCta}</>
                     )}
                   </button>
                 </div>
