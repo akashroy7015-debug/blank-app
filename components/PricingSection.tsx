@@ -55,11 +55,6 @@ const PLANS = [
   },
 ]
 
-const CREDIT_PACKS = [
-  { key: 'credits_10',  credits: 10,  price: '$1.99',  perCredit: '$0.20 each — save 80%', popular: false },
-  { key: 'credits_50',  credits: 50,  price: '$7.99',  perCredit: '$0.16 each — save 84%', popular: true  },
-  { key: 'credits_150', credits: 150, price: '$19.99', perCredit: '$0.13 each — save 87%', popular: false },
-]
 
 export default function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
@@ -189,40 +184,8 @@ export default function PricingSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-            {CREDIT_PACKS.map((pack) => (
-              <div key={pack.key}
-                className={`relative flex flex-col items-center rounded-2xl p-6 text-center transition-all hover:-translate-y-1 shadow-soft ${pack.popular ? 'ring-2' : ''}`}
-                style={{ background: 'var(--card)', border: `1px solid var(--border)`, ...(pack.popular ? { ringColor: 'oklch(0.7 0.19 55)' } : {}) }}>
-                {pack.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, oklch(0.7 0.19 55), oklch(0.6 0.22 40))' }}>
-                    BEST VALUE
-                  </div>
-                )}
-                <div className="text-3xl mb-2">🪙</div>
-                <div className="text-3xl font-extrabold mb-1" style={{ color: 'var(--foreground)' }}>{pack.credits}</div>
-                <div className="text-sm font-medium mb-3" style={{ color: 'var(--muted-foreground)' }}>credits</div>
-                <div className="text-2xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{pack.price}</div>
-                <div className="text-xs mb-5" style={{ color: 'var(--muted-foreground)' }}>{pack.perCredit} per analysis</div>
-                <button
-                  onClick={() => handleCheckout(pack.key)}
-                  disabled={loadingPlan === pack.key}
-                  className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
-                  style={{ background: 'oklch(0.7 0.19 55 / 0.12)', color: 'oklch(0.5 0.19 55)', border: '1px solid oklch(0.7 0.19 55 / 0.3)' }}>
-                  {loadingPlan === pack.key ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                      Loading...
-                    </span>
-                  ) : lang === 'hi' ? 'Kharido' : 'Buy Now'}
-                </button>
-              </div>
-            ))}
-          </div>
-
           {/* Custom credit amount */}
-          <div className="mt-8 max-w-sm mx-auto rounded-2xl p-6 text-center"
+          <div className="max-w-sm mx-auto rounded-2xl p-6 text-center"
             style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <p className="text-sm font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
               {lang === 'hi' ? 'Khud choose karo kitne credits chahiye' : 'Or choose your own amount'}
