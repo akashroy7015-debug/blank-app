@@ -56,6 +56,7 @@ const PLANS = [
 
 export default function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [customCredits, setCustomCredits] = useState(25)
   const { lang } = useLanguage()
   const c = copy[lang]
@@ -63,6 +64,7 @@ export default function PricingSection() {
 
   const handleCheckout = async (plan: string, quantity?: number) => {
     setLoadingPlan(plan)
+    setCheckoutError(null)
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       const supabase = createBrowserClient()
@@ -76,9 +78,14 @@ export default function PricingSection() {
         body: JSON.stringify({ plan, quantity }),
       })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setCheckoutError(data.error ?? 'Checkout failed. Please try again.')
+      }
     } catch (err) {
       console.error('Checkout failed', err)
+      setCheckoutError('Checkout failed. Please try again.')
     } finally {
       setLoadingPlan(null)
     }
@@ -94,6 +101,12 @@ export default function PricingSection() {
   return (
     <section className="py-20 px-4" id="pricing">
       <div className="max-w-6xl mx-auto">
+        {checkoutError && (
+          <div className="mb-6 rounded-xl px-4 py-3 text-sm text-center font-medium"
+            style={{ background: 'oklch(0.4 0.2 25 / 0.12)', border: '1px solid oklch(0.4 0.2 25 / 0.3)', color: 'oklch(0.55 0.2 25)' }}>
+            {checkoutError}
+          </div>
+        )}
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
             style={{ background: 'oklch(0.64 0.24 5 / 0.1)', border: '1px solid oklch(0.64 0.24 5 / 0.2)', color: 'var(--primary)' }}>
