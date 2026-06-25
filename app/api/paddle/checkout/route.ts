@@ -55,7 +55,11 @@ export async function POST(req: Request) {
 
     body.custom_data = { user_id: userId }
 
-    const res = await fetch('https://api.paddle.com/transactions', {
+    const paddleBase = process.env.PADDLE_SANDBOX === 'true'
+      ? 'https://sandbox-api.paddle.com'
+      : 'https://api.paddle.com'
+
+    const res = await fetch(`${paddleBase}/transactions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
