@@ -56,9 +56,9 @@ const PLANS = [
 ]
 
 const CREDIT_PACKS = [
-  { key: 'credits_10',  credits: 10,  price: '$1.99',  perCredit: '~$0.20', popular: false },
-  { key: 'credits_50',  credits: 50,  price: '$7.99',  perCredit: '~$0.16', popular: true  },
-  { key: 'credits_150', credits: 150, price: '$19.99', perCredit: '~$0.13', popular: false },
+  { key: 'credits_10',  credits: 10,  price: '$1.99',  perCredit: '$0.20 each — save 80%', popular: false },
+  { key: 'credits_50',  credits: 50,  price: '$7.99',  perCredit: '$0.16 each — save 84%', popular: true  },
+  { key: 'credits_150', credits: 150, price: '$19.99', perCredit: '$0.13 each — save 87%', popular: false },
 ]
 
 export default function PricingSection() {
@@ -251,7 +251,7 @@ export default function PricingSection() {
               </button>
             </div>
             <p className="text-xs mb-4" style={{ color: 'var(--muted-foreground)' }}>
-              ~${(customCredits * 0.19).toFixed(2)} · $0.19 per credit
+              ${(customCredits * 1).toFixed(2)} · $1.00 per credit
             </p>
             <button
               onClick={() => handleCheckout('credits_custom', customCredits)}
