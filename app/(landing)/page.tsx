@@ -1,9 +1,13 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/lib/language'
 import Logo from '@/components/Logo'
+import { createBrowserClient } from '@/lib/supabase'
+import { LogOut, User } from 'lucide-react'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 const HEARTS = ['💌', '💕', '✨', '💬', '❤️', '💗', '🌷', '🫶']
 
@@ -68,6 +72,28 @@ const FAQS_HI = [
 export default function LandingPage() {
   const { lang, setLang } = useLanguage()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createBrowserClient()
+    if (!supabase) { setAuthLoading(false); return }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createBrowserClient()
+    if (supabase) await supabase.auth.signOut()
+    router.refresh()
+  }
 
   const floaters = useMemo(
     () => Array.from({ length: 18 }).map((_, i) => ({
@@ -117,16 +143,42 @@ export default function LandingPage() {
             >
               {lang === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 EN'}
             </button>
-            <Link href="/auth/login"
-              className="rounded-full px-4 py-2.5 text-sm font-semibold transition-colors"
-              style={{ color: 'var(--muted-foreground)' }}>
-              {lang === 'hi' ? 'Login' : 'Login'}
-            </Link>
-            <Link href="/dashboard"
-              className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105 shadow-pill"
-              style={{ background: 'var(--gradient-primary)' }}>
-              {lang === 'hi' ? 'free try karo' : 'try free'}
-            </Link>
+            {authLoading ? (
+              <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'var(--muted)' }} />
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                    style={{ background: 'var(--gradient-primary)' }}>
+                    <User size={14} />
+                  </div>
+                  <span className="hidden lg:block max-w-[160px] truncate">{user.email}</span>
+                </div>
+                <Link href="/dashboard"
+                  className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105 shadow-pill"
+                  style={{ background: 'var(--gradient-primary)' }}>
+                  Dashboard
+                </Link>
+                <button onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-full hover:opacity-80 transition-opacity"
+                  style={{ color: 'var(--muted-foreground)' }}>
+                  <LogOut size={14} /> Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link href="/auth/login"
+                  className="rounded-full px-4 py-2.5 text-sm font-semibold transition-colors"
+                  style={{ color: 'var(--muted-foreground)' }}>
+                  Login
+                </Link>
+                <Link href="/dashboard"
+                  className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105 shadow-pill"
+                  style={{ background: 'var(--gradient-primary)' }}>
+                  {lang === 'hi' ? 'free try karo' : 'try free'}
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
