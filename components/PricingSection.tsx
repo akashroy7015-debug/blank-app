@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, Crown, Zap, Star, Coins } from 'lucide-react'
 import { useLanguage, type Lang } from '@/lib/language'
 import { createBrowserClient } from '@/lib/supabase'
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Paddle?: any
+  }
+}
 
 const copy: Record<Lang, { badge: string; heading: string; sub: string; popular: string; bestValue: string; loading: string; chooseAmount: string; perCredit: string; buyCredits: (n: number) => string }> = {
   en: { badge: 'Pricing', heading: 'Simple, Honest Pricing', sub: "Start free. Upgrade when you're ready. No hidden fees.", popular: 'POPULAR', bestValue: 'BEST VALUE', loading: 'Loading...', chooseAmount: 'Or choose your own amount', perCredit: '$1.00 per credit', buyCredits: n => `Buy ${n} Credits` },
@@ -54,6 +61,13 @@ const PLANS = [
 ]
 
 
+const PRICE_IDS: Record<string, string | undefined> = {
+  weekly:         process.env.NEXT_PUBLIC_PADDLE_PRICE_WEEKLY,
+  monthly:        process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY,
+  yearly:         process.env.NEXT_PUBLIC_PADDLE_PRICE_YEARLY,
+  credits_custom: process.env.NEXT_PUBLIC_PADDLE_PRICE_CREDITS_CUSTOM,
+}
+
 export default function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
@@ -62,30 +76,56 @@ export default function PricingSection() {
   const c = copy[lang]
   const planLang = getPlanLang(lang)
 
+  useEffect(() => {
+    if (window.Paddle) return
+    const script = document.createElement('script')
+    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
+    script.onload = () => {
+      const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+      if (token && window.Paddle) {
+        window.Paddle.Initialize({ token })
+      }
+    }
+    document.head.appendChild(script)
+  }, [])
+
   const handleCheckout = async (plan: string, quantity?: number) => {
     setLoadingPlan(plan)
     setCheckoutError(null)
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       const supabase = createBrowserClient()
-      if (supabase) {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+      if (!supabase) throw new Error('Service not configured')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        setCheckoutError('Please sign in before purchasing.')
+        return
       }
-      const res = await fetch('/api/paddle/checkout', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ plan, quantity }),
+
+      const priceId = PRICE_IDS[plan]
+      if (!priceId) {
+        setCheckoutError(`Price not configured for plan: ${plan}. Check NEXT_PUBLIC_PADDLE_PRICE_* env vars.`)
+        return
+      }
+
+      if (!window.Paddle) {
+        setCheckoutError('Paddle is still loading. Please try again in a moment.')
+        return
+      }
+
+      const qty = (plan === 'credits_custom' && typeof quantity === 'number' && quantity >= 1)
+        ? Math.min(Math.floor(quantity), 10000)
+        : 1
+
+      window.Paddle.Checkout.open({
+        items: [{ priceId, quantity: qty }],
+        customData: { user_id: session.user.id },
+        settings: {
+          successUrl: `${window.location.origin}/dashboard?success=true`,
+        },
       })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        setCheckoutError(data.error ?? 'Checkout failed. Please try again.')
-      }
     } catch (err) {
       console.error('Checkout failed', err)
-      setCheckoutError('Checkout failed. Please try again.')
+      setCheckoutError(err instanceof Error ? err.message : 'Checkout failed. Please try again.')
     } finally {
       setLoadingPlan(null)
     }
