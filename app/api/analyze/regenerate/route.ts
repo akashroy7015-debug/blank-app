@@ -21,7 +21,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Service not configured' }, { status: 500 })
     }
 
-    // Require auth but do NOT deduct credits — regeneration is free after the initial analysis
+    // Require auth + verify user has access (subscription, credits, or free tier usage today)
+    // Does NOT deduct credits — regeneration is a free extra after the initial paid analysis
     const supabase = createServerClient()
     if (!supabase) return NextResponse.json({ error: 'Service not configured' }, { status: 500 })
 
@@ -30,6 +31,22 @@ export async function POST(req: Request) {
 
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
     if (!user) return NextResponse.json({ error: 'Session expired. Please sign in again.' }, { status: 401 })
+
+    // Gate: user must have an active subscription, credits, or have used a free analysis today
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status, credits, free_analyses_count, free_analyses_date')
+      .eq('user_id', user.id)
+      .single()
+
+    const isSubscribed = sub?.status === 'active'
+    const hasCredits = (sub?.credits ?? 0) > 0
+    const today = new Date().toISOString().split('T')[0]
+    const usedFreeToday = sub?.free_analyses_date === today && (sub?.free_analyses_count ?? 0) > 0
+
+    if (!isSubscribed && !hasCredits && !usedFreeToday) {
+      return NextResponse.json({ error: 'Please analyze a chat first to unlock regeneration.' }, { status: 403 })
+    }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 

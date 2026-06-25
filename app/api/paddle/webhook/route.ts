@@ -56,21 +56,25 @@ export async function POST(req: Request) {
         const itemQty = (items[0]?.quantity as number) ?? 1
         const creditsToAdd = resolveCredits(priceId, itemQty)
         if (creditsToAdd === 0) break
-        // Upsert: create row if none, or increment credits
-        const { data: existing } = await supabase
-          .from('subscriptions')
-          .select('credits')
-          .eq('user_id', userId)
-          .single()
-        if (existing) {
-          await supabase
+        // Upsert with atomic increment via raw SQL to avoid read-then-write race on retries
+        const { error: rpcErr } = await supabase.rpc('increment_credits', { p_user_id: userId, p_amount: creditsToAdd })
+        if (rpcErr) {
+          // Fallback: read-then-write if RPC not available
+          const { data: existing } = await supabase
             .from('subscriptions')
-            .update({ credits: (existing.credits ?? 0) + creditsToAdd })
+            .select('credits')
             .eq('user_id', userId)
-        } else {
-          await supabase
-            .from('subscriptions')
-            .insert({ user_id: userId, credits: creditsToAdd, status: 'inactive' })
+            .single()
+          if (existing) {
+            await supabase
+              .from('subscriptions')
+              .update({ credits: (existing.credits ?? 0) + creditsToAdd })
+              .eq('user_id', userId)
+          } else {
+            await supabase
+              .from('subscriptions')
+              .insert({ user_id: userId, credits: creditsToAdd, status: 'inactive' })
+          }
         }
         break
       }

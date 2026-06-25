@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
-import { Menu, X, LogOut, User } from 'lucide-react'
+import { Menu, X, LogOut, User, Globe, ChevronDown } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import { useLanguage } from '@/lib/language'
+import { useLanguage, LANGS } from '@/lib/language'
 import Logo from '@/components/Logo'
 
 export default function Navbar() {
@@ -14,6 +14,8 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
   const { lang, setLang } = useLanguage()
 
   useEffect(() => {
@@ -32,12 +34,24 @@ export default function Navbar() {
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleLogout = async () => {
     const supabase = createBrowserClient()
     if (supabase) await supabase.auth.signOut()
     router.push('/')
     setIsMenuOpen(false)
   }
+
+  const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
 
   return (
     <nav style={{
@@ -64,15 +78,41 @@ export default function Navbar() {
             <Link href="/dashboard" className="hover:opacity-80 transition-opacity">Dashboard</Link>
           </div>
 
-          {/* Language toggle */}
-          <button
-            onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-            aria-label={lang === 'en' ? 'Switch to Hindi' : 'Switch to English'}
-            className="hidden md:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-          >
-            {lang === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 EN'}
-          </button>
+          {/* Language picker (desktop) */}
+          <div className="hidden md:block relative" ref={langRef}>
+            <button
+              onClick={() => setLangOpen(o => !o)}
+              aria-label="Switch language"
+              aria-expanded={langOpen}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border hover:opacity-80 transition-opacity"
+              style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+            >
+              <Globe size={13} />
+              <span>{currentLang.flag} {currentLang.code.toUpperCase()}</span>
+              <ChevronDown size={11} style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+            </button>
+
+            {langOpen && (
+              <div className="absolute right-0 mt-2 rounded-2xl shadow-lg overflow-hidden z-50"
+                style={{ background: 'oklch(0.99 0.003 60)', border: '1px solid var(--border)', minWidth: 160 }}>
+                {LANGS.map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => { setLang(l.code); setLangOpen(false) }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:opacity-80 transition-opacity text-left"
+                    style={{
+                      color: 'var(--foreground)',
+                      background: l.code === lang ? 'oklch(0.64 0.24 5 / 0.08)' : 'transparent',
+                      fontWeight: l.code === lang ? 600 : 400,
+                    }}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Auth */}
           <div className="hidden md:flex items-center gap-3">
@@ -131,11 +171,30 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <button onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-            className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-full border w-fit"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
-            {lang === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 English'}
-          </button>
+
+          {/* Mobile language picker */}
+          <div>
+            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>Language</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {LANGS.map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => { setLang(l.code); setIsMenuOpen(false) }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-left transition-opacity hover:opacity-80"
+                  style={{
+                    background: l.code === lang ? 'oklch(0.64 0.24 5 / 0.1)' : 'var(--muted)',
+                    color: l.code === lang ? 'var(--primary)' : 'var(--muted-foreground)',
+                    border: l.code === lang ? '1px solid oklch(0.64 0.24 5 / 0.3)' : '1px solid transparent',
+                    fontWeight: l.code === lang ? 600 : 400,
+                  }}
+                >
+                  <span>{l.flag}</span>
+                  <span>{l.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="pt-2 border-t flex flex-col gap-2" style={{ borderColor: 'var(--border)' }}>
             {user ? (
               <>
