@@ -47,7 +47,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">4. Account Registration</h2>
             <p>
-              To access certain features, you must create an account using a valid email address. You are responsible for maintaining the security of your account credentials. You agree to notify us immediately at <a href="mailto:legal@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>legal@flirtiq.app</a> if you suspect any unauthorized use of your account.
+              To access certain features, you must create an account using a valid email address. You are responsible for maintaining the security of your account credentials. You agree to notify us immediately at <a href="mailto:legal@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>legal@flirtiq.online</a> if you suspect any unauthorized use of your account.
             </p>
             <p className="mt-3">
               You may not create accounts using automated methods, use another person&apos;s identity, or create multiple free accounts to circumvent usage limits.
@@ -85,7 +85,7 @@ export default function TermsPage() {
               <li>Duplicate charges due to a billing error</li>
             </ul>
             <p className="mt-3">
-              To request a refund, email <a href="mailto:support@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.app</a> with your order ID. Refund requests are processed within 5–7 business days.
+              To request a refund, email <a href="mailto:support@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.online</a> with your order ID. Refund requests are processed within 5–7 business days.
             </p>
           </section>
 
@@ -160,7 +160,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold mb-4">15. Contact</h2>
             <p>
               For any questions about these Terms, contact us at:<br />
-              <a href="mailto:legal@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>legal@flirtiq.app</a>
+              <a href="mailto:legal@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>legal@flirtiq.online</a>
             </p>
           </section>
 

@@ -62,7 +62,7 @@ export default function RefundsPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">6. How to Request a Refund</h2>
             <p>
-              To request a refund, email <a href="mailto:support@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.app</a> with:
+              To request a refund, email <a href="mailto:support@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.online</a> with:
             </p>
             <ul className="list-disc list-inside mt-3 space-y-2">
               <li>The email address used for your purchase</li>
@@ -85,7 +85,7 @@ export default function RefundsPage() {
             <h2 className="text-xl font-semibold mb-4">8. Contact</h2>
             <p>
               Questions about this Refund Policy? Reach us at:<br />
-              <a href="mailto:support@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.app</a>
+              <a href="mailto:support@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>support@flirtiq.online</a>
             </p>
           </section>
 

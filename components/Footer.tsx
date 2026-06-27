@@ -46,7 +46,7 @@ export default function Footer() {
               <li><Link href="/privacy" className="hover:opacity-80 transition-opacity">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:opacity-80 transition-opacity">Terms of Service</Link></li>
               <li><Link href="/refunds" className="hover:opacity-80 transition-opacity">Refund Policy</Link></li>
-              <li><a href="mailto:hello@flirtiq.app" className="hover:opacity-80 transition-opacity">Contact</a></li>
+              <li><a href="mailto:hello@flirtiq.online" className="hover:opacity-80 transition-opacity">Contact</a></li>
             </ul>
           </div>
         </div>
