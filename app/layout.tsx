@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { LanguageProvider } from '@/lib/language'
 import InstallBanner from '@/components/InstallBanner'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://flirtiq.online'
 const TITLE = 'FlirtIQ — AI Dating Assistant: Perfect Replies & Rizz Generator'
@@ -132,6 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <InstallBanner />
         </LanguageProvider>
+        <SpeedInsights />
       </body>
     </html>
   )
