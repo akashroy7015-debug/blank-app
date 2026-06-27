@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/react'
 import { LanguageProvider } from '@/lib/language'
 import InstallBanner from '@/components/InstallBanner'
 
@@ -132,6 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <InstallBanner />
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   )
