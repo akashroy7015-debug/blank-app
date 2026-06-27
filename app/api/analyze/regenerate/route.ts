@@ -11,11 +11,13 @@ const STYLE_PROMPTS: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { imageBase64, mimeType, style } = await req.json()
+    const { imageBase64, mimeType, style, context } = await req.json()
 
     if (!imageBase64 || !style || !STYLE_PROMPTS[style]) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
+
+    const userContext = typeof context === 'string' ? context.trim().slice(0, 500) : ''
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'Service not configured' }, { status: 500 })
@@ -59,6 +61,7 @@ Rules:
 - Match the language, tone, and dialect of the conversation exactly
 - Make it feel different from a generic template — read the actual chat context
 - Return ONLY the reply text (no quotes, no JSON, no explanation)
+${userContext ? `- Factor in the user's context/goal: "${userContext}"` : ''}
 
 Just the reply itself.`
 
