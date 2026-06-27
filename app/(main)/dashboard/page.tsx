@@ -202,6 +202,20 @@ const dashCopy: Record<Lang, {
 
 type Mode = 'analyze' | 'opener'
 
+// Optional context field copy — falls back to English for languages not translated
+const contextCopy: Partial<Record<Lang, { label: string; placeholder: string }>> & { en: { label: string; placeholder: string } } = {
+  en: { label: 'Add context (optional)', placeholder: "e.g. We matched on Hinge, she loves hiking, I want to ask her out…" },
+  hi: { label: 'Context add karo (optional)', placeholder: 'e.g. Hinge pe match hua, usse hiking pasand hai, main date pe puchna chahta hoon…' },
+  es: { label: 'Añadir contexto (opcional)', placeholder: 'p. ej. Hicimos match en Hinge, le encanta el senderismo, quiero invitarla a salir…' },
+  fr: { label: 'Ajouter du contexte (optionnel)', placeholder: 'ex. On a matché sur Hinge, elle adore la randonnée, je veux l\'inviter…' },
+  pt: { label: 'Adicionar contexto (opcional)', placeholder: 'ex. Demos match no Hinge, ela ama trilhas, quero chamá-la para sair…' },
+  ar: { label: 'أضف سياقًا (اختياري)', placeholder: 'مثال: تطابقنا على Hinge، تحب المشي، أريد أن أدعوها للخروج…' },
+  de: { label: 'Kontext hinzufügen (optional)', placeholder: 'z. B. Wir haben auf Hinge gematcht, sie liebt Wandern, ich will sie einladen…' },
+  zh: { label: '添加背景信息（可选）', placeholder: '例如：我们在 Hinge 上配对，她喜欢徒步，我想约她出去…' },
+  ja: { label: 'コンテキストを追加（任意）', placeholder: '例：Hingeでマッチ、彼女はハイキングが好き、デートに誘いたい…' },
+  ko: { label: '컨텍스트 추가 (선택)', placeholder: '예: Hinge에서 매칭됨, 등산을 좋아함, 데이트 신청하고 싶음…' },
+}
+
 interface AnalysisResultData {
   replies: { aura: string; cool: string; bold: string; gentleman: string }
   compatibilityScore: number
@@ -224,6 +238,7 @@ export default function DashboardPage() {
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [imageBase64, setImageBase64] = useState<string | null>(null)
   const [imageMime, setImageMime] = useState<string>('image/jpeg')
+  const [context, setContext] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [mode, setMode] = useState<Mode>('analyze')
@@ -320,7 +335,7 @@ export default function DashboardPage() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ imageBase64: b64, mimeType: imageFile.type }),
+        body: JSON.stringify({ imageBase64: b64, mimeType: imageFile.type, context: context.trim() || undefined }),
       })
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
@@ -347,7 +362,7 @@ export default function DashboardPage() {
       const response = await fetch('/api/analyze/regenerate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
-        body: JSON.stringify({ imageBase64, mimeType: imageMime, style: key }),
+        body: JSON.stringify({ imageBase64, mimeType: imageMime, style: key, context: context.trim() || undefined }),
       })
       if (!response.ok) return null
       const data = await response.json()
@@ -548,6 +563,22 @@ export default function DashboardPage() {
                     <div className="mt-4 flex items-start gap-2">
                       <ImageIcon size={14} style={{ color: 'var(--muted-foreground)', flexShrink: 0, marginTop: 2 }} />
                       <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{dc.hint}</p>
+                    </div>
+                  )}
+
+                  {imageFile && (
+                    <div className="mt-5">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+                        {(contextCopy[lang] ?? contextCopy.en).label}
+                      </label>
+                      <textarea
+                        value={context}
+                        onChange={(e) => setContext(e.target.value.slice(0, 500))}
+                        placeholder={(contextCopy[lang] ?? contextCopy.en).placeholder}
+                        rows={2}
+                        className="w-full rounded-xl px-4 py-3 text-sm resize-none transition-all focus:outline-none focus:ring-2"
+                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                      />
                     </div>
                   )}
 

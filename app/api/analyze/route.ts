@@ -6,11 +6,13 @@ const FREE_LIMIT = 3
 
 export async function POST(req: Request) {
   try {
-    const { imageBase64, mimeType } = await req.json()
+    const { imageBase64, mimeType, context } = await req.json()
 
     if (!imageBase64) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 })
     }
+
+    const userContext = typeof context === 'string' ? context.trim().slice(0, 500) : ''
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
@@ -146,7 +148,7 @@ Language matching examples:
 - Japanese chat → Japanese replies (match keigo level of original)
 Always match tone, formality, and cultural nuance of the original conversation exactly.
 
-If the image is unclear or not a dating/messaging conversation, still return valid JSON with helpful general replies in English and a compatibilityScore of 50.`
+If the image is unclear or not a dating/messaging conversation, still return valid JSON with helpful general replies in English and a compatibilityScore of 50.${userContext ? `\n\nIMPORTANT EXTRA CONTEXT FROM THE USER — weave this into the replies and strategy. The user said: "${userContext}". Use their stated goal (e.g. asking them out, restarting a dead chat) to shape the replies and the strategyNote.` : ''}`
 
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
