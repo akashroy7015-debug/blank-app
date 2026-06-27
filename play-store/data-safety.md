@@ -15,7 +15,7 @@ payments, Vercel hosting) and must stay consistent with `/privacy`.
 |----------|--------|
 | Does your app collect or share any of the required user data types? | **Yes** |
 | Is all of the user data collected by your app encrypted in transit? | **Yes** (HTTPS everywhere) |
-| Do you provide a way for users to request that their data be deleted? | **Yes** — email privacy@flirtiq.app (and account deletion in-app if available) |
+| Do you provide a way for users to request that their data be deleted? | **Yes** — email privacy@flirtiq.online (and account deletion in-app if available) |
 
 ---
 
@@ -70,8 +70,8 @@ payments, Vercel hosting) and must stay consistent with `/privacy`.
    sentence so the policy matches the Data Safety declaration. (Reviewers do
    cross-check.)
 2. **Account deletion** — Google requires a deletion path. Make sure
-   privacy@flirtiq.app is monitored, or add an in-app "Delete account" button.
+   privacy@flirtiq.online is monitored, or add an in-app "Delete account" button.
 3. **Privacy policy URL** must be live and reachable:
-   https://blank-app-gules.vercel.app/privacy (or your custom domain).
+   https://flirtiq.online/privacy (or your custom domain).
 4. **Data deletion URL** — you can reuse the privacy page or add a dedicated
    one; the form asks for it.

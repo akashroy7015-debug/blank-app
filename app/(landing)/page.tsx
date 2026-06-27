@@ -797,7 +797,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 <li><Link href="/privacy" className="hover:opacity-80">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:opacity-80">Terms of Service</Link></li>
-                <li><a href="mailto:hello@flirtiq.app" className="hover:opacity-80">Contact</a></li>
+                <li><a href="mailto:hello@flirtiq.online" className="hover:opacity-80">Contact</a></li>
               </ul>
             </div>
           </div>

@@ -3,7 +3,7 @@ import './globals.css'
 import { LanguageProvider } from '@/lib/language'
 import InstallBanner from '@/components/InstallBanner'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://blank-app-gules.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://flirtiq.online'
 const TITLE = 'FlirtIQ — Write the perfect message.'
 const DESCRIPTION = 'Upload your chat screenshot — FlirtIQ reads the tone, gives you 4 perfect replies and a compatibility score. Works on Tinder, Bumble, Hinge, Instagram, WhatsApp & more.'
 

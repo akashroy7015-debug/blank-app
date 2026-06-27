@@ -46,13 +46,13 @@ Everyone (no mature content in the app itself — users upload their own screens
 dating, flirting, tinder, bumble, hinge, rizz, ai dating, chat assistant, dating coach, pickup lines, opener, reply generator, dating app helper, whatsapp, instagram
 
 ## Privacy Policy URL
-https://blank-app-gules.vercel.app/privacy
+https://flirtiq.online/privacy
 
 ## Website
-https://blank-app-gules.vercel.app
+https://flirtiq.online
 
 ## Email
-hello@flirtiq.app
+hello@flirtiq.online
 
 ---
 

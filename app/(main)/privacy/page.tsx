@@ -23,10 +23,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">1. Who We Are</h2>
             <p>
-              FlirtIQ (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates the website and service at flirtiq.app. We are the data controller for information collected through our platform.
+              FlirtIQ (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates the website and service at flirtiq.online. We are the data controller for information collected through our platform.
             </p>
             <p className="mt-3">
-              Contact: <a href="mailto:privacy@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.app</a>
+              Contact: <a href="mailto:privacy@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.online</a>
             </p>
           </section>
 
@@ -143,14 +143,14 @@ export default function PrivacyPage() {
               <li><strong className="">Restriction:</strong> Request that we limit how we use your data</li>
             </ul>
             <p className="mt-3">
-              To exercise any right, email <a href="mailto:privacy@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.app</a>. We will respond within 30 days. Indian users also have rights under the Information Technology (Reasonable Security Practices) Rules, 2011.
+              To exercise any right, email <a href="mailto:privacy@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.online</a>. We will respond within 30 days. Indian users also have rights under the Information Technology (Reasonable Security Practices) Rules, 2011.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-4">8. Data Security</h2>
             <p>
-              We use industry-standard security measures including HTTPS encryption, Supabase Row Level Security (RLS) policies, and secure environment variable management. However, no system is 100% secure. If you suspect a security breach, contact us immediately at <a href="mailto:security@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>security@flirtiq.app</a>.
+              We use industry-standard security measures including HTTPS encryption, Supabase Row Level Security (RLS) policies, and secure environment variable management. However, no system is 100% secure. If you suspect a security breach, contact us immediately at <a href="mailto:security@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>security@flirtiq.online</a>.
             </p>
           </section>
 
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4">11. Children&apos;s Privacy</h2>
             <p>
-              FlirtIQ is not intended for anyone under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has created an account, contact us at <a href="mailto:privacy@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.app</a> and we will delete the account promptly.
+              FlirtIQ is not intended for anyone under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has created an account, contact us at <a href="mailto:privacy@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.online</a> and we will delete the account promptly.
             </p>
           </section>
 
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold mb-4">13. Contact &amp; Complaints</h2>
             <p>
               For privacy questions or to exercise your rights:<br />
-              <a href="mailto:privacy@flirtiq.app" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.app</a>
+              <a href="mailto:privacy@flirtiq.online" className="hover:underline" style={{color:"var(--primary)"}}>privacy@flirtiq.online</a>
             </p>
             <p className="mt-3">
               If you are in the EU and are not satisfied with our response, you have the right to lodge a complaint with your local Data Protection Authority.
