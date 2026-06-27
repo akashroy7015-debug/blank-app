@@ -288,6 +288,22 @@ export default function LandingPage() {
           </a>
         </div>
 
+        {/* Differentiators — what makes FlirtIQ different from other rizz apps */}
+        <div className="mx-auto mt-7 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="inline-flex items-center gap-1.5">
+            <span style={{ color: 'var(--primary)' }}>🌍</span>
+            {baseLang === 'hi' ? '10+ bhashayein (Hinglish bhi)' : 'Replies in 10+ languages'}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span style={{ color: 'var(--primary)' }}>✓</span>
+            {baseLang === 'hi' ? 'Roz 3 free · koi card nahi' : '3 free every day · no card'}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span style={{ color: 'var(--primary)' }}>🎯</span>
+            {baseLang === 'hi' ? 'Apna goal batao, tailored reply pao' : 'Add your goal, get tailored replies'}
+          </span>
+        </div>
+
         {/* Phone mockup */}
         <div className="relative mx-auto mt-16 w-full max-w-sm">
           <div className="animate-float-soft shadow-card relative rounded-[2.5rem] p-1" style={{ border: '10px solid oklch(0.18 0.03 340 / 0.9)', background: 'oklch(0.18 0.03 340 / 0.9)' }}>
