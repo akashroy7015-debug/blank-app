@@ -123,8 +123,23 @@ export default function LandingPage() {
   const faqs = baseLang === 'hi' ? FAQS_HI : FAQS_EN
   const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0]
 
+  // FAQ structured data (always English for Google) — enables FAQ rich results
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS_EN.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }
+
   return (
     <div className="landing-page relative overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* Floating hearts */}
       <div className="pointer-events-none fixed inset-0 z-0">
         {floaters.map((f, i) => (
