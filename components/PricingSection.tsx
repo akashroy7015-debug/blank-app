@@ -76,16 +76,20 @@ export default function PricingSection() {
   const c = copy[lang]
   const planLang = getPlanLang(lang)
 
+  const [paddleReady, setPaddleReady] = useState(false)
+
   useEffect(() => {
-    if (window.Paddle) return
-    const script = document.createElement('script')
-    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
-    script.onload = () => {
+    const init = () => {
       const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
       if (token && window.Paddle) {
         window.Paddle.Initialize({ token })
+        setPaddleReady(true)
       }
     }
+    if (window.Paddle) { init(); return }
+    const script = document.createElement('script')
+    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
+    script.onload = init
     document.head.appendChild(script)
   }, [])
 
@@ -116,10 +120,18 @@ export default function PricingSection() {
         ? Math.min(Math.floor(quantity), 10000)
         : 1
 
+      // Paddle supports a limited set of locales; fall back to English for others (e.g. Hindi)
+      const PADDLE_LOCALES = ['en', 'es', 'fr', 'pt', 'de', 'zh', 'ja', 'ko', 'ar']
+      const locale = PADDLE_LOCALES.includes(lang) ? lang : 'en'
+
       window.Paddle.Checkout.open({
         items: [{ priceId, quantity: qty }],
         customData: { user_id: session.user.id },
+        customer: session.user.email ? { email: session.user.email } : undefined,
         settings: {
+          displayMode: 'overlay',
+          theme: 'light',
+          locale,
           successUrl: `${window.location.origin}/dashboard?success=true`,
         },
       })
